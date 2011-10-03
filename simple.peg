@@ -1,8 +1,4 @@
-program <- comment {
-        (load "/home/chir/src/yscheme/util.lisp")
-        (princ "comment\n")
-        (princ data)
-}
+program <- comment
 
 datum <- intertoken_space (simple_datum / compound_datum / label "=" datum / label "#") intertoken_space
 simple_datum <- boolean / number / character / string / symbol / bytevector
@@ -20,17 +16,12 @@ token <- identifier delimiter / boolean delimiter / number delimiter / character
 
 delimiter <- whitespace / "(" / ")" / [\"] / ";"
 
-comment <- ("\;" (!newline .)*) { (princ "one line comment\n") (princ data) (princ "\n") } / nested_comment { (princ "nested\n") (princ data) (princ "\n")  }
-nested_comment <- "#|" comment_text comment_cont* "|#" { (princ "inner nested\n") (list :nested_comment (second data)) }
+comment <- ("\;" (!newline .)*) / nested_comment
+nested_comment <- "#|" comment_text comment_cont* "|#"
 
 comment_text <- (!comment_text_taboo .)* { (charl-to-str (mapcar #'cadr (first data))) }
 comment_text_taboo <- "#|" / "|#"
-comment_cont <- nested_comment comment_text {
-             (princ "cont\n")
-             (princ data)
-             (princ "\n")
-             (drop-last data)
-}
+comment_cont <- nested_comment comment_text
 
 atmosphere <- whitespace / comment
 intertoken_space <- atmosphere*

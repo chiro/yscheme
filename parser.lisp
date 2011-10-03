@@ -5,10 +5,7 @@
     (FUNCALL (METAPEG::|parse_program|) 0)))
 (DEFUN METAPEG::|parse_program| ()
   (LAMBDA (METAPEG::OFFSET)
-    (METAPEG::BUILD-PARSER-FUNCTION "program"
-                                    (METAPEG::SEQ (METAPEG::|parse_comment|)
-                                                  (LIST 'METAPEG::ACTION NIL
-                                                        'METAPEG::METAPEG-ACTION178)))))
+    (METAPEG::BUILD-PARSER-FUNCTION "program" (METAPEG::|parse_comment|))))
 (DEFUN METAPEG::|parse_datum| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "datum"
@@ -120,20 +117,14 @@
     (METAPEG::BUILD-PARSER-FUNCTION "comment"
                                     (METAPEG::EITHER
                                      (METAPEG::SEQ
-                                      (METAPEG::SEQ
-                                       (METAPEG::MATCH-STRING "\\;")
-                                       (METAPEG::MANY
-                                        (METAPEG::SEQ
-                                         (METAPEG::NEGATE
-                                          (METAPEG::|parse_newline|))
-                                         (METAPEG::MATCH-ANY-CHAR
-                                          'METAPEG::DUMMY))))
-                                      (LIST 'METAPEG::ACTION NIL
-                                            'METAPEG::METAPEG-ACTION179))
-                                     (METAPEG::SEQ
-                                      (METAPEG::|parse_nested_comment|)
-                                      (LIST 'METAPEG::ACTION NIL
-                                            'METAPEG::METAPEG-ACTION180))))))
+                                      (METAPEG::MATCH-STRING "\\;")
+                                      (METAPEG::MANY
+                                       (METAPEG::SEQ
+                                        (METAPEG::NEGATE
+                                         (METAPEG::|parse_newline|))
+                                        (METAPEG::MATCH-ANY-CHAR
+                                         'METAPEG::DUMMY))))
+                                     (METAPEG::|parse_nested_comment|)))))
 (DEFUN METAPEG::|parse_nested_comment| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "nested_comment"
@@ -141,9 +132,8 @@
                                                   (METAPEG::|parse_comment_text|)
                                                   (METAPEG::MANY
                                                    (METAPEG::|parse_comment_cont|))
-                                                  (METAPEG::MATCH-STRING "|#")
-                                                  (LIST 'METAPEG::ACTION NIL
-                                                        'METAPEG::METAPEG-ACTION181)))))
+                                                  (METAPEG::MATCH-STRING
+                                                   "|#")))))
 (DEFUN METAPEG::|parse_comment_text| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "comment_text"
@@ -155,7 +145,7 @@
                                        (METAPEG::MATCH-ANY-CHAR
                                         'METAPEG::DUMMY)))
                                      (LIST 'METAPEG::ACTION NIL
-                                           'METAPEG::METAPEG-ACTION182)))))
+                                           'METAPEG::METAPEG-ACTION199)))))
 (DEFUN METAPEG::|parse_comment_text_taboo| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "comment_text_taboo"
@@ -167,9 +157,7 @@
     (METAPEG::BUILD-PARSER-FUNCTION "comment_cont"
                                     (METAPEG::SEQ
                                      (METAPEG::|parse_nested_comment|)
-                                     (METAPEG::|parse_comment_text|)
-                                     (LIST 'METAPEG::ACTION NIL
-                                           'METAPEG::METAPEG-ACTION183)))))
+                                     (METAPEG::|parse_comment_text|)))))
 (DEFUN METAPEG::|parse_atmosphere| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "atmosphere"
@@ -975,26 +963,4 @@
                                        #\a #\b #\c #\d #\e #\f)))))
 
  
-(defun METAPEG::METAPEG-ACTION183 (data) 
-             (princ "cont
-")
-             (princ data)
-             (princ "
-")
-             (cl::drop-last data)
- )
-(defun METAPEG::METAPEG-ACTION182 (data)  (charl-to-str (mapcar #'cadr (first data)))  )
-(defun METAPEG::METAPEG-ACTION181 (data)  (princ "inner nested
-") (list :nested_comment (second data))  )
-(defun METAPEG::METAPEG-ACTION180 (data)  (princ "nested
-") (princ data) (princ "
-")   )
-(defun METAPEG::METAPEG-ACTION179 (data)  (princ "one line comment
-") (princ data) (princ "
-")  )
-(defun METAPEG::METAPEG-ACTION178 (data) 
-        (load "/home/chir/src/yscheme/util.lisp")
-        (princ "comment
-")
-        (princ data)
- )
+(defun METAPEG::METAPEG-ACTION199 (data)  (charl-to-str (mapcar #'cadr (first data)))  )
