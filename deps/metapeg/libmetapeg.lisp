@@ -1,5 +1,6 @@
 (in-package :metapeg)
-(declaim (optimize (speed 3) (safety 0) (debug 0)))
+;(declaim (optimize (speed 3) (safety 0) (debug 0)))
+(declaim (optimize (speed 0) (safety 3) (debug 3)))
 
 ; Global variables used during the parse
 ; --------------------
@@ -47,7 +48,9 @@
 ; Utility functions
 ; --------------------
 
-(defun make-name (string) (intern (concatenate 'string "parse_" string) (find-package :cl-user)))
+(defun make-name (string)
+  (intern (concatenate 'string "parse_" string)
+          (symbol-package 'this-package)))
 
 
 (defun fix-escapes2 (char-list)
@@ -71,14 +74,25 @@
 (defun fix-escapes (list) (fix-escapes2 list))
 ; filter out the first part of pair, useful for patterns where we specify a negative match (eg (!"x" .)*)
 (defun zip-second (pair-list)
-  (loop for (fst snd) in pair-list collect snd))
+  (loop for x in pair-list collect (second x)))
+
+(defvar *build-with-tracing* nil)
 
 (defmacro build-parser-function (name parser)
-  `(let* ((*context* (clone-ctx *context* ,name))
-	  (result (funcall ,parser offset)))
-    (if (ctx-failed-p result)
-	(fail)
-	(succeed *context* (value result) (start-index result) (end-index result)))))
+  (if *build-with-tracing*
+      `(let* ((*context* (clone-ctx *context* ,name))
+              (result (funcall ,parser offset)))
+         (format t "~&~vT> ~A at ~D" offset ',name offset)
+         (prog1
+             (if (ctx-failed-p result)
+                 (fail)
+                 (succeed *context* (value result) (start-index result) (end-index result)))
+           (format t "~&~vT<~A ~A" offset ',name (if (ctx-failed-p result) ":<" ":)"))))
+      `(let* ((*context* (clone-ctx *context* ,name))
+              (result (funcall ,parser offset)))
+         (if (ctx-failed-p result)
+             (fail)
+             (succeed *context* (value result) (start-index result) (end-index result))))))
 
 (defun make-call-rule-closure (rule)
   `#'(lambda (offset)
@@ -209,7 +223,7 @@
 	      (let ((*context* (clone-ctx *context* 'mp_string)))
 		(succeed *context* string offset (+ offset (length string))))
 	      (fail))
-	(SB-KERNEL:BOUNDING-INDICES-BAD-ERROR (e) (fail)))))
+	(#+sbcl SB-KERNEL:BOUNDING-INDICES-BAD-ERROR #+ccl simple-error () (fail)))))
 
 (defun match-char (char-list)
   #'(lambda (offset)
@@ -225,26 +239,33 @@
 		  
 ;	    (format t "match char dropped through ~S~%" char-list)
 	    (fail))
-	(SB-KERNEL:BOUNDING-INDICES-BAD-ERROR (e)
-	  
-		 (fail))
-	(SB-KERNEL::INDEX-TOO-LARGE-ERROR (e1)
-	  (fail)))))
+	(#+sbcl SB-KERNEL:BOUNDING-INDICES-BAD-ERROR #+ccl simple-error ()
+                (fail))
+	(#+sbcl SB-KERNEL::INDEX-TOO-LARGE-ERROR #+ccl simple-error ()
+                (fail))
+        #+ccl(CCL::SEQUENCE-INDEX-TYPE-ERROR ()
+               (fail)))))
 
 
 (defun match-any-char (ignored)
+  (declare (ignore ignored))
   #'(lambda (offset)
       (handler-case
 	  (succeed (clone-ctx *context* 'mp_anychar) (elt *input* offset) offset (+ offset 1))
-	(SB-KERNEL:BOUNDING-INDICES-BAD-ERROR (e)
-	  (fail)))))
+	(#+sbcl SB-KERNEL:BOUNDING-INDICES-BAD-ERROR #+ccl simple-error ()
+                (fail))
+        #+ccl(CCL::SEQUENCE-INDEX-TYPE-ERROR ()
+               (fail)))))
 
 (defun match-any-char2 (ignored)
+  (declare (ignore ignored))
   #'(lambda (offset)
       (handler-case
 	  (succeed (clone-ctx *context* 'mp_anychar) (elt *input* offset) offset (+ offset 1))
-	(SB-KERNEL:BOUNDING-INDICES-BAD-ERROR (e)
-	  (fail)))))
+	(#+sbcl SB-KERNEL:BOUNDING-INDICES-BAD-ERROR #+ccl simple-error ()
+                (fail))
+        #+ccl(CCL::SEQUENCE-INDEX-TYPE-ERROR ()
+               (fail)))))
 
 (defun negate (parser)
   #'(lambda (offset)
@@ -282,34 +303,49 @@
 (defun read-file (filename)
   (with-open-file (file filename :direction :input)
     (let ((s (make-string (file-length file))))
-      (read-sequence s file)
-      s)))
+      ;; (declare (dynamic-extent s)) ; stack alloc is unlikely
+      ;; note characters are not bytes
+      (subseq s  0 (read-sequence s file)))))
 
-(let ((counter 0))
-  (defun gen-action-name ()
-    (incf counter)
-    (intern  (format nil "metapeg_action~A" counter))))
+(defvar *action-name-counter* 0)
 
-(defvar *cached-parser-file-name* nil)
-(defvar *cached-parser-file-write-date* nil)
-; returns the parse tree and the content of the *actions* variable
+(defun gen-action-name ()
+  (intern (format nil "METAPEG-ACTION~A" (incf *action-name-counter*))
+          (symbol-package 'this-package)))
+
 (defun parse (input-file parser-file)
+  "Parse the input-file given the parser-file via parse-string."
   (let ((input (read-file input-file)))
     (parse-string input parser-file)))
 
+(defvar *cached-parser-file-name* nil)
+
+(defvar *cached-parser-file-write-date* nil)
+
+(defun load-parser-if-necessary (parser-file)
+  "Load the parser defined in file unless it happens to be the one we last loaded."
+  (cond
+    ((and (equal *cached-parser-file-name* parser-file) ; this breaks if the user changes directories
+          (equal *cached-parser-file-write-date* (file-write-date parser-file)))
+     'already-loaded)
+    (t
+     (load-parser parser-file))))
+
+(defun load-parser (&optional (parser-file *cached-parser-file-name*))
+  (setf *cached-parser-file-name* nil) ; fearing error invalidate the cache
+  (load parser-file)
+  (setf *cached-parser-file-name* parser-file)
+  (setf *cached-parser-file-write-date* (file-write-date parser-file)))
+
 (defun parse-string (input parser-file)
+  "Wrapper for parse-string-using-latest-parser, but first load the parser in parser-file if necessary."
+  (load-parser-if-necessary parser-file)
+  (parse-string-using-latest-parser input))
+
+(defun parse-string-using-latest-parser (input)
+  "Return two values; the result of the parse and what ever accumulates in *actions*"
   (let ((*input* input)
 	(*actions* nil))
-    (if (and (equal *cached-parser-file-name* parser-file) ; this breaks if the user changes directories
-	     (equal *cached-parser-file-write-date* (file-write-date parser-file)))
-	(progn
-	  'dont-load-it-again
-	  )
-	(progn
-	  (load parser-file)
-	  (setf *cached-parser-file-name* parser-file)
-	  (setf *cached-parser-file-write-date* (file-write-date parser-file))
-	  ))
     (let ((result (generated-parser)))
       (if (not (ctx-failed-p result))
 	  (if (= (length *input*)  (end-index result))
@@ -332,13 +368,19 @@
 ;			       (format *error-output* "data is ~s~%" data)
 			       (handler-case
 				   (return-from transform (funcall (third el) data))
-				 (undefined-function ()
-				   (progn  (format *error-output* "missing definition for ~A~%" (third el))
+				 (undefined-function (e)
+				   (progn  (format *error-output* "missing definition for ~S ~A~%" (third el) e)
 					   tree)))))
 		       data)))
 	  tree)))
 
+#|
 
+;;; Example of how to rebootstrap the metapeg parser.  Note that binding the metapeg::*action-name-counter*
+;;; helps to keep the source control diffs under control.
 
+(let ((*package* (find-package "METAPEG")) 
+      (metapeg::*action-name-counter* 319))
+  (metapeg:create-parser "/tmp/metapeg.lisp" "metapeg.peg" "metapeg.lisp"))
 
-  
+|#

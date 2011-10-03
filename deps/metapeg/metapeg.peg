@@ -1,11 +1,12 @@
-program <- ws* rule+ {
+;;; A PEG grammar for PEG grammars
+program <- ws_or_nl* rule+ {
 `((in-package :metapeg)	
  (declaim (optimize (speed 3) (safety 0) (debug 0)))
   (defun generated-parser ()
 	(let ((*context* (make-instance 'context :start-index 0)))
 	   (funcall (|parse_program|) 0)))
 	,@(second data))
-}
+} /* I suspect that action is wrong. */
 
 rule <- id ws* "<-" ws* ordered-expr-list ws_or_nl* { `(defun ,(make-name (first data)) ()
 	 (lambda (offset)
@@ -27,10 +28,10 @@ expr-list <- expr (ws+ expr-list)* { (if (or (equal (second data) "") (null (sec
 expr <-  simple-expr "*" { `(many ,(first data)) } / simple-expr "+" { `(many1 ,(first data)) } / simple-expr "?" { `(optional ,(first data)) } / simple-expr { (first data) }
 simple-expr <- string { (first data) } / action / "&" simple-expr { `(follow ,(second data)) } / "@" id { `(match ,(second data)) } / id { 
 	`(,(make-name (first data)))
-} / bracketed-rule  { (first data) } / "!." / "!" expr { `(negate ,(second data)) } / character-class { (first data) } / "." { `(match-any-char 'dummy) } 
+} / bracketed-rule  { (first data) } / "!." / "!" expr { `(negate ,(second data)) } / character-class { (first data) } / "." { (declare (ignore data)) `(match-any-char 'dummy) } 
 bracketed-rule <- "()" / "(" ws* ordered-expr-list ws* ")" { (third data) }
 
-id <- [ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_]+ { (char-list-to-string (first data)) }
+id <- [ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_0123456789]+ { (char-list-to-string (first data)) }
 character-class <- "[" (not_right_bracket .)+ "]" { `(match-char ',(fix-escapes2 (zip-second (second data)))) }
 string <- [\"] (![\"] .)* [\"] { `(match-string ,(char-list-to-string (zip-second (second data)))) }
 action <- [\{] (![\}] .)* [\}] { 
@@ -39,9 +40,13 @@ action <- [\{] (![\}] .)* [\}] {
 	 `(list 'action nil ',action-name))
 }
 
+
 not_right_bracket <- !"]" 
-ws <- [ \t]
+semi_comment <- ";" (![\n] .)*
+inline_comment <- "/*" (!"*/" .)* "*/"
+raw_ws <- [ \t]
 nl <- [\n]
+ws <- raw_ws/inline_comment/semi_comment
 ws_or_nl <- ws/nl
 
 

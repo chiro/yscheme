@@ -3,116 +3,129 @@
 (DEFUN METAPEG::GENERATED-PARSER ()
   (LET ((METAPEG::*CONTEXT* (MAKE-INSTANCE 'METAPEG::CONTEXT :START-INDEX 0)))
     (FUNCALL (METAPEG::|parse_program|) 0)))
-(DEFUN |parse_program| ()
+(DEFUN METAPEG::|parse_program| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "program"
-                                    (METAPEG::SEQ (METAPEG::MANY (|parse_ws|))
-                                                  (METAPEG::MANY1
-                                                   (|parse_rule|))
-                                                  (LIST 'METAPEG::ACTION NIL
-                                                        '|metapeg_action1|)))))
-(DEFUN |parse_rule| ()
+                                    (METAPEG::SEQ
+                                     (METAPEG::MANY
+                                      (METAPEG::|parse_ws_or_nl|))
+                                     (METAPEG::MANY1 (METAPEG::|parse_rule|))
+                                     (LIST 'METAPEG::ACTION NIL
+                                           'METAPEG::METAPEG-ACTION69)))))
+(DEFUN METAPEG::|parse_rule| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "rule"
-                                    (METAPEG::SEQ (|parse_id|)
-                                                  (METAPEG::MANY (|parse_ws|))
-                                                  (METAPEG::MATCH-STRING "<-")
-                                                  (METAPEG::MANY (|parse_ws|))
-                                                  (|parse_ordered-expr-list|)
+                                    (METAPEG::SEQ (METAPEG::|parse_id|)
                                                   (METAPEG::MANY
-                                                   (|parse_ws_or_nl|))
+                                                   (METAPEG::|parse_ws|))
+                                                  (METAPEG::MATCH-STRING "<-")
+                                                  (METAPEG::MANY
+                                                   (METAPEG::|parse_ws|))
+                                                  (METAPEG::|parse_ordered-expr-list|)
+                                                  (METAPEG::MANY
+                                                   (METAPEG::|parse_ws_or_nl|))
                                                   (LIST 'METAPEG::ACTION NIL
-                                                        '|metapeg_action2|)))))
-(DEFUN |parse_ordered-expr-list| ()
+                                                        'METAPEG::METAPEG-ACTION70)))))
+(DEFUN METAPEG::|parse_ordered-expr-list| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "ordered-expr-list"
                                     (METAPEG::EITHER
-                                     (METAPEG::SEQ (|parse_expr-list|)
-                                                   (METAPEG::MANY (|parse_ws|))
+                                     (METAPEG::SEQ (METAPEG::|parse_expr-list|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_ws|))
                                                    (METAPEG::MATCH-STRING "/")
-                                                   (METAPEG::MANY (|parse_ws|))
-                                                   (|parse_ordered-expr-list|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_ws|))
+                                                   (METAPEG::|parse_ordered-expr-list|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action3|))
-                                     (METAPEG::SEQ (|parse_expr-list|)
+                                                         'METAPEG::METAPEG-ACTION71))
+                                     (METAPEG::SEQ (METAPEG::|parse_expr-list|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action4|))))))
-(DEFUN |parse_expr-list| ()
+                                                         'METAPEG::METAPEG-ACTION72))))))
+(DEFUN METAPEG::|parse_expr-list| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "expr-list"
-                                    (METAPEG::SEQ (|parse_expr|)
+                                    (METAPEG::SEQ (METAPEG::|parse_expr|)
                                                   (METAPEG::MANY
                                                    (METAPEG::SEQ
                                                     (METAPEG::MANY1
-                                                     (|parse_ws|))
-                                                    (|parse_expr-list|)))
+                                                     (METAPEG::|parse_ws|))
+                                                    (METAPEG::|parse_expr-list|)))
                                                   (LIST 'METAPEG::ACTION NIL
-                                                        '|metapeg_action5|)))))
-(DEFUN |parse_expr| ()
+                                                        'METAPEG::METAPEG-ACTION73)))))
+(DEFUN METAPEG::|parse_expr| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "expr"
                                     (METAPEG::EITHER
-                                     (METAPEG::SEQ (|parse_simple-expr|)
-                                                   (METAPEG::MATCH-STRING "*")
-                                                   (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action6|))
-                                     (METAPEG::SEQ (|parse_simple-expr|)
-                                                   (METAPEG::MATCH-STRING "+")
-                                                   (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action7|))
-                                     (METAPEG::SEQ (|parse_simple-expr|)
-                                                   (METAPEG::MATCH-STRING "?")
-                                                   (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action8|))
-                                     (METAPEG::SEQ (|parse_simple-expr|)
-                                                   (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action9|))))))
-(DEFUN |parse_simple-expr| ()
+                                     (METAPEG::SEQ
+                                      (METAPEG::|parse_simple-expr|)
+                                      (METAPEG::MATCH-STRING "*")
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION74))
+                                     (METAPEG::SEQ
+                                      (METAPEG::|parse_simple-expr|)
+                                      (METAPEG::MATCH-STRING "+")
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION75))
+                                     (METAPEG::SEQ
+                                      (METAPEG::|parse_simple-expr|)
+                                      (METAPEG::MATCH-STRING "?")
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION76))
+                                     (METAPEG::SEQ
+                                      (METAPEG::|parse_simple-expr|)
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION77))))))
+(DEFUN METAPEG::|parse_simple-expr| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "simple-expr"
                                     (METAPEG::EITHER
-                                     (METAPEG::SEQ (|parse_string|)
+                                     (METAPEG::SEQ (METAPEG::|parse_string|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action10|))
-                                     (|parse_action|)
+                                                         'METAPEG::METAPEG-ACTION78))
+                                     (METAPEG::|parse_action|)
                                      (METAPEG::SEQ (METAPEG::MATCH-STRING "&")
-                                                   (|parse_simple-expr|)
+                                                   (METAPEG::|parse_simple-expr|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action11|))
+                                                         'METAPEG::METAPEG-ACTION79))
                                      (METAPEG::SEQ (METAPEG::MATCH-STRING "@")
-                                                   (|parse_id|)
+                                                   (METAPEG::|parse_id|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action12|))
-                                     (METAPEG::SEQ (|parse_id|)
+                                                         'METAPEG::METAPEG-ACTION80))
+                                     (METAPEG::SEQ (METAPEG::|parse_id|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action13|))
-                                     (METAPEG::SEQ (|parse_bracketed-rule|)
-                                                   (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action14|))
+                                                         'METAPEG::METAPEG-ACTION81))
+                                     (METAPEG::SEQ
+                                      (METAPEG::|parse_bracketed-rule|)
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION82))
                                      (METAPEG::MATCH-STRING "!.")
                                      (METAPEG::SEQ (METAPEG::MATCH-STRING "!")
-                                                   (|parse_expr|)
+                                                   (METAPEG::|parse_expr|)
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action15|))
-                                     (METAPEG::SEQ (|parse_character-class|)
-                                                   (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action16|))
+                                                         'METAPEG::METAPEG-ACTION83))
+                                     (METAPEG::SEQ
+                                      (METAPEG::|parse_character-class|)
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION84))
                                      (METAPEG::SEQ (METAPEG::MATCH-STRING ".")
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action17|))))))
-(DEFUN |parse_bracketed-rule| ()
+                                                         'METAPEG::METAPEG-ACTION85))))))
+(DEFUN METAPEG::|parse_bracketed-rule| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "bracketed-rule"
                                     (METAPEG::EITHER
                                      (METAPEG::MATCH-STRING "()")
                                      (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
-                                                   (METAPEG::MANY (|parse_ws|))
-                                                   (|parse_ordered-expr-list|)
-                                                   (METAPEG::MANY (|parse_ws|))
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_ws|))
+                                                   (METAPEG::|parse_ordered-expr-list|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_ws|))
                                                    (METAPEG::MATCH-STRING ")")
                                                    (LIST 'METAPEG::ACTION NIL
-                                                         '|metapeg_action18|))))))
-(DEFUN |parse_id| ()
+                                                         'METAPEG::METAPEG-ACTION86))))))
+(DEFUN METAPEG::|parse_id| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "id"
                                     (METAPEG::SEQ
@@ -123,22 +136,24 @@
                                          #\S #\T #\U #\V #\W #\X #\Y #\Z #\a
                                          #\b #\c #\d #\e #\f #\g #\h #\i #\j
                                          #\k #\l #\m #\n #\o #\p #\q #\r #\s
-                                         #\t #\u #\v #\w #\x #\y #\z #\- #\_)))
+                                         #\t #\u #\v #\w #\x #\y #\z #\- #\_
+                                         #\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8
+                                         #\9)))
                                      (LIST 'METAPEG::ACTION NIL
-                                           '|metapeg_action19|)))))
-(DEFUN |parse_character-class| ()
+                                           'METAPEG::METAPEG-ACTION87)))))
+(DEFUN METAPEG::|parse_character-class| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "character-class"
                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "[")
                                                   (METAPEG::MANY1
                                                    (METAPEG::SEQ
-                                                    (|parse_not_right_bracket|)
+                                                    (METAPEG::|parse_not_right_bracket|)
                                                     (METAPEG::MATCH-ANY-CHAR
                                                      'METAPEG::DUMMY)))
                                                   (METAPEG::MATCH-STRING "]")
                                                   (LIST 'METAPEG::ACTION NIL
-                                                        '|metapeg_action20|)))))
-(DEFUN |parse_string| ()
+                                                        'METAPEG::METAPEG-ACTION88)))))
+(DEFUN METAPEG::|parse_string| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "string"
                                     (METAPEG::SEQ (METAPEG::MATCH-CHAR '(#\"))
@@ -151,8 +166,8 @@
                                                      'METAPEG::DUMMY)))
                                                   (METAPEG::MATCH-CHAR '(#\"))
                                                   (LIST 'METAPEG::ACTION NIL
-                                                        '|metapeg_action21|)))))
-(DEFUN |parse_action| ()
+                                                        'METAPEG::METAPEG-ACTION89)))))
+(DEFUN METAPEG::|parse_action| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "action"
                                     (METAPEG::SEQ (METAPEG::MATCH-CHAR '(#\{))
@@ -165,65 +180,96 @@
                                                      'METAPEG::DUMMY)))
                                                   (METAPEG::MATCH-CHAR '(#\}))
                                                   (LIST 'METAPEG::ACTION NIL
-                                                        '|metapeg_action22|)))))
-(DEFUN |parse_not_right_bracket| ()
+                                                        'METAPEG::METAPEG-ACTION90)))))
+(DEFUN METAPEG::|parse_not_right_bracket| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "not_right_bracket"
                                     (METAPEG::NEGATE
                                      (METAPEG::MATCH-STRING "]")))))
-(DEFUN |parse_ws| ()
+(DEFUN METAPEG::|parse_semi_comment| ()
   (LAMBDA (METAPEG::OFFSET)
-    (METAPEG::BUILD-PARSER-FUNCTION "ws" (METAPEG::MATCH-CHAR '(#\  #\Tab)))))
-(DEFUN |parse_nl| ()
+    (METAPEG::BUILD-PARSER-FUNCTION "semi_comment"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING ";")
+                                                  (METAPEG::MANY
+                                                   (METAPEG::SEQ
+                                                    (METAPEG::NEGATE
+                                                     (METAPEG::MATCH-CHAR
+                                                      '(#\Newline)))
+                                                    (METAPEG::MATCH-ANY-CHAR
+                                                     'METAPEG::DUMMY)))))))
+(DEFUN METAPEG::|parse_inline_comment| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "inline_comment"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "/*")
+                                                  (METAPEG::MANY
+                                                   (METAPEG::SEQ
+                                                    (METAPEG::NEGATE
+                                                     (METAPEG::MATCH-STRING
+                                                      "*/"))
+                                                    (METAPEG::MATCH-ANY-CHAR
+                                                     'METAPEG::DUMMY)))
+                                                  (METAPEG::MATCH-STRING
+                                                   "*/")))))
+(DEFUN METAPEG::|parse_raw_ws| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "raw_ws"
+                                    (METAPEG::MATCH-CHAR '(#\  #\Tab)))))
+(DEFUN METAPEG::|parse_nl| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "nl" (METAPEG::MATCH-CHAR '(#\Newline)))))
-(DEFUN |parse_ws_or_nl| ()
+(DEFUN METAPEG::|parse_ws| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "ws"
+                                    (METAPEG::EITHER (METAPEG::|parse_raw_ws|)
+                                                     (METAPEG::|parse_inline_comment|)
+                                                     (METAPEG::|parse_semi_comment|)))))
+(DEFUN METAPEG::|parse_ws_or_nl| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "ws_or_nl"
-                                    (METAPEG::EITHER (|parse_ws|)
-                                                     (|parse_nl|)))))
+                                    (METAPEG::EITHER (METAPEG::|parse_ws|)
+                                                     (METAPEG::|parse_nl|)))))
 
  
-(defun |metapeg_action22| (data)  
+(defun METAPEG::METAPEG-ACTION90 (data)  
 	(let ((action-name (gen-action-name)))
 	 (push (list action-name (char-list-to-string (fix-escapes (zip-second (second data))))) *actions*)
 	 `(list 'action nil ',action-name))
  )
-(defun |metapeg_action21| (data)  `(match-string ,(char-list-to-string (zip-second (second data))))  )
-(defun |metapeg_action20| (data)  `(match-char ',(fix-escapes2 (zip-second (second data))))  )
-(defun |metapeg_action19| (data)  (char-list-to-string (first data))  )
-(defun |metapeg_action18| (data)  (third data)  )
-(defun |metapeg_action17| (data)  `(match-any-char 'dummy)  )
-(defun |metapeg_action16| (data)  (first data)  )
-(defun |metapeg_action15| (data)  `(negate ,(second data))  )
-(defun |metapeg_action14| (data)  (first data)  )
-(defun |metapeg_action13| (data)  
+(defun METAPEG::METAPEG-ACTION89 (data)  `(match-string ,(char-list-to-string (zip-second (second data))))  )
+(defun METAPEG::METAPEG-ACTION88 (data)  `(match-char ',(fix-escapes2 (zip-second (second data))))  )
+(defun METAPEG::METAPEG-ACTION87 (data)  (char-list-to-string (first data))  )
+(defun METAPEG::METAPEG-ACTION86 (data)  (third data)  )
+(defun METAPEG::METAPEG-ACTION85 (data)  (declare (ignore data)) `(match-any-char 'dummy)  )
+(defun METAPEG::METAPEG-ACTION84 (data)  (first data)  )
+(defun METAPEG::METAPEG-ACTION83 (data)  `(negate ,(second data))  )
+(defun METAPEG::METAPEG-ACTION82 (data)  (first data)  )
+(defun METAPEG::METAPEG-ACTION81 (data)  
 	`(,(make-name (first data)))
  )
-(defun |metapeg_action12| (data)  `(match ,(second data))  )
-(defun |metapeg_action11| (data)  `(follow ,(second data))  )
-(defun |metapeg_action10| (data)  (first data)  )
-(defun |metapeg_action9| (data)  (first data)  )
-(defun |metapeg_action8| (data)  `(optional ,(first data))  )
-(defun |metapeg_action7| (data)  `(many1 ,(first data))  )
-(defun |metapeg_action6| (data)  `(many ,(first data))  )
-(defun |metapeg_action5| (data)  (if (or (equal (second data) "") (null (second data)))
+(defun METAPEG::METAPEG-ACTION80 (data)  `(match ,(second data))  )
+(defun METAPEG::METAPEG-ACTION79 (data)  `(follow ,(second data))  )
+(defun METAPEG::METAPEG-ACTION78 (data)  (first data)  )
+(defun METAPEG::METAPEG-ACTION77 (data)  (first data)  )
+(defun METAPEG::METAPEG-ACTION76 (data)  `(optional ,(first data))  )
+(defun METAPEG::METAPEG-ACTION75 (data)  `(many1 ,(first data))  )
+(defun METAPEG::METAPEG-ACTION74 (data)  `(many ,(first data))  )
+(defun METAPEG::METAPEG-ACTION73 (data)  (if (or (equal (second data) "") (null (second data)))
 					     (first data)
 					     (let ((tail (second (first (second data)))))
 						  (if (equal (first tail) 'seq)
 		   			              `(seq ,(first data) ,@(rest tail))
 		   			              `(seq ,(first data) ,tail))))  )
-(defun |metapeg_action4| (data)  (first data)  )
-(defun |metapeg_action3| (data)  
+(defun METAPEG::METAPEG-ACTION72 (data)  (first data)  )
+(defun METAPEG::METAPEG-ACTION71 (data)  
 (let ((tail (fifth data)))
 	(if (equal (first tail) 'either)
 	    `(either ,(first data) ,@(rest tail))
 	    `(either ,(first data) ,(fifth data))))
  )
-(defun |metapeg_action2| (data)  `(defun ,(make-name (first data)) ()
+(defun METAPEG::METAPEG-ACTION70 (data)  `(defun ,(make-name (first data)) ()
 	 (lambda (offset)
 	  (build-parser-function ,(first data) ,(fifth data))))  )
-(defun |metapeg_action1| (data) 
+(defun METAPEG::METAPEG-ACTION69 (data) 
 `((in-package :metapeg)	
  (declaim (optimize (speed 3) (safety 0) (debug 0)))
   (defun generated-parser ()
