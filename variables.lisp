@@ -1,23 +1,30 @@
-(defclass object ()
-  (env :accessor env :initarg :env))
+(defclass scm-object () ())
 
 
-(defclass boolean (object)
-  (value :accessor value :initarg :value))
 
-(defclass symbol (object)
-  (name :accessor name :initarg :name)
-  (value :accessor value :initarg :value))
+(defclass self-evaluating (scm-object)
+  ((val :accessor val :initarg :val)))
 
-(defclass number (object)
-  (value :accessor value :initarg :value)))
+;(defclass scm-boolean   (self-evaluating) ())
+;(defclass scm-number    (self-evaluating) ())
+;(defclass scm-string    (self-evaluating) ())
+;(defclass scm-character (scm-self-evaluating) ())
 
-(defclass string (object)
-  (string :accessor string :initarg :string))
 
-(defclass character (object)
-  (character :accessor character :initarg :character))
 
-(defclass cons (object)
-  (car :accessor car :initarg :car)
-  (cdr :accessor cdr :initarg :cdr)))
+(defclass scm-symbol (scm-object)
+  ((name :accessor name :initarg :name)))
+
+
+
+(defclass scm-cons (scm-object)
+  ((car :accessor car :initarg :car)
+   (cdr :accessor cdr :initarg :cdr)))
+
+(defclass definition (scm-cons)
+  ())
+(defclass syntax-definition (scm-cons)
+  ())
+(defclass record-type-definition (scm-cons)
+  ())
+
