@@ -12,7 +12,7 @@ rule <- id ws* "<-" ws* ordered-expr-list ws_or_nl* { `(defun ,(make-name (first
 	 (lambda (offset)
 	  (build-parser-function ,(first data) ,(fifth data)))) }
 
-ordered-expr-list <- expr-list ws* "/" ws* ordered-expr-list  { 
+ordered-expr-list <- expr-list ws_or_nl* "/" ws* ordered-expr-list  { 
 (let ((tail (fifth data)))
 	(if (equal (first tail) 'either)
 	    `(either ,(first data) ,@(rest tail))
