@@ -3,26 +3,25 @@
 (DEFUN METAPEG::GENERATED-PARSER ()
   (LET ((METAPEG::*CONTEXT* (MAKE-INSTANCE 'METAPEG::CONTEXT :START-INDEX 0)))
     (FUNCALL (METAPEG::|parse_program|) 0)))
-(DEFUN METAPEG::|parse_program| ()
-  (LAMBDA (METAPEG::OFFSET)
-    (METAPEG::BUILD-PARSER-FUNCTION "program"
-                                    (METAPEG::SEQ (METAPEG::|parse_comment|)
-                                                  (METAPEG::|parse_intertoken_space|)))))
 (DEFUN METAPEG::|parse_datum| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "datum"
                                     (METAPEG::SEQ
                                      (METAPEG::|parse_intertoken_space|)
-                                     (METAPEG::EITHER
-                                      (METAPEG::|parse_simple_datum|)
-                                      (METAPEG::|parse_compound_datum|)
-                                      (METAPEG::SEQ (METAPEG::|parse_label|)
-                                                    (METAPEG::MATCH-STRING "=")
-                                                    (METAPEG::|parse_datum|))
-                                      (METAPEG::SEQ (METAPEG::|parse_label|)
-                                                    (METAPEG::MATCH-STRING
-                                                     "#")))
+                                     (METAPEG::|parse_datum_aux|)
                                      (METAPEG::|parse_intertoken_space|)))))
+(DEFUN METAPEG::|parse_datum_aux| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "datum_aux"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_simple_datum|)
+                                     (METAPEG::|parse_compound_datum|)
+                                     (METAPEG::SEQ (METAPEG::|parse_label|)
+                                                   (METAPEG::MATCH-STRING "=")
+                                                   (METAPEG::|parse_datum|))
+                                     (METAPEG::SEQ (METAPEG::|parse_label|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "#"))))))
 (DEFUN METAPEG::|parse_simple_datum| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "simple_datum"
@@ -127,7 +126,7 @@
                                                       (METAPEG::MATCH-ANY-CHAR
                                                        'METAPEG::DUMMY))))
                                       (LIST 'METAPEG::ACTION NIL
-                                            'METAPEG::METAPEG-ACTION43))
+                                            'METAPEG::METAPEG-ACTION85))
                                      (METAPEG::|parse_nested_comment|)))))
 (DEFUN METAPEG::|parse_nested_comment| ()
   (LAMBDA (METAPEG::OFFSET)
@@ -149,7 +148,7 @@
                                        (METAPEG::MATCH-ANY-CHAR
                                         'METAPEG::DUMMY)))
                                      (LIST 'METAPEG::ACTION NIL
-                                           'METAPEG::METAPEG-ACTION44)))))
+                                           'METAPEG::METAPEG-ACTION86)))))
 (DEFUN METAPEG::|parse_comment_text_taboo| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "comment_text_taboo"
@@ -202,15 +201,19 @@
 (DEFUN METAPEG::|parse_identifier| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "identifier"
-                                    (METAPEG::EITHER
-                                     (METAPEG::SEQ (METAPEG::|parse_initial|)
-                                                   (METAPEG::MANY
-                                                    (METAPEG::|parse_subsequent|)))
-                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "|")
-                                                   (METAPEG::MANY
-                                                    (METAPEG::|parse_symbol_element|))
-                                                   (METAPEG::MATCH-STRING "|"))
-                                     (METAPEG::|parse_peculiar_identifier|)))))
+                                    (METAPEG::SEQ
+                                     (METAPEG::|parse_intertoken_space|)
+                                     (METAPEG::EITHER
+                                      (METAPEG::SEQ (METAPEG::|parse_initial|)
+                                                    (METAPEG::MANY
+                                                     (METAPEG::|parse_subsequent|)))
+                                      (METAPEG::SEQ (METAPEG::MATCH-STRING "|")
+                                                    (METAPEG::MANY
+                                                     (METAPEG::|parse_symbol_element|))
+                                                    (METAPEG::MATCH-STRING
+                                                     "|"))
+                                      (METAPEG::|parse_peculiar_identifier|))
+                                     (METAPEG::|parse_delimiter|)))))
 (DEFUN METAPEG::|parse_initial| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "initial"
@@ -366,22 +369,29 @@
 (DEFUN METAPEG::|parse_boolean| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "boolean"
-                                    (METAPEG::EITHER
-                                     (METAPEG::MATCH-STRING "#t")
-                                     (METAPEG::MATCH-STRING "#f")))))
+                                    (METAPEG::SEQ
+                                     (METAPEG::|parse_intertoken_space|)
+                                     (METAPEG::EITHER
+                                      (METAPEG::MATCH-STRING "#t")
+                                      (METAPEG::MATCH-STRING "#f"))
+                                     (METAPEG::|parse_delimiter|)
+                                     (METAPEG::|parse_intertoken_space|)))))
 (DEFUN METAPEG::|parse_character| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "character"
-                                    (METAPEG::EITHER
-                                     (METAPEG::SEQ
-                                      (METAPEG::MATCH-STRING "#\\\\")
-                                      (METAPEG::EITHER
-                                       (METAPEG::|parse_character_name|)
-                                       (METAPEG::MATCH-ANY-CHAR
-                                        'METAPEG::DUMMY)))
-                                     (METAPEG::SEQ
-                                      (METAPEG::MATCH-STRING "#\\\\x")
-                                      (METAPEG::|parse_hex_scalar_value|))))))
+                                    (METAPEG::SEQ
+                                     (METAPEG::|parse_intertoken_space|)
+                                     (METAPEG::EITHER
+                                      (METAPEG::SEQ
+                                       (METAPEG::MATCH-STRING "#\\\\")
+                                       (METAPEG::EITHER
+                                        (METAPEG::|parse_character_name|)
+                                        (METAPEG::MATCH-ANY-CHAR
+                                         'METAPEG::DUMMY)))
+                                      (METAPEG::SEQ
+                                       (METAPEG::MATCH-STRING "#\\\\x")
+                                       (METAPEG::|parse_hex_scalar_value|)))
+                                     (METAPEG::|parse_delimiter|)))))
 (DEFUN METAPEG::|parse_character_name| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "character_name"
@@ -398,11 +408,12 @@
 (DEFUN METAPEG::|parse_string| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "string"
-                                    (METAPEG::SEQ (METAPEG::MATCH-CHAR '(#\"))
-                                                  (METAPEG::MANY
-                                                   (METAPEG::|parse_string_element|))
-                                                  (METAPEG::MATCH-CHAR
-                                                   '(#\"))))))
+                                    (METAPEG::SEQ
+                                     (METAPEG::|parse_intertoken_space|)
+                                     (METAPEG::MATCH-CHAR '(#\"))
+                                     (METAPEG::MANY
+                                      (METAPEG::|parse_string_element|))
+                                     (METAPEG::MATCH-CHAR '(#\"))))))
 (DEFUN METAPEG::|parse_string_element| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "string_element"
@@ -440,10 +451,13 @@
 (DEFUN METAPEG::|parse_number| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "number"
-                                    (METAPEG::EITHER (METAPEG::|parse_num2|)
-                                                     (METAPEG::|parse_num8|)
-                                                     (METAPEG::|parse_num10|)
-                                                     (METAPEG::|parse_num16|)))))
+                                    (METAPEG::SEQ
+                                     (METAPEG::|parse_intertoken_space|)
+                                     (METAPEG::EITHER (METAPEG::|parse_num2|)
+                                                      (METAPEG::|parse_num8|)
+                                                      (METAPEG::|parse_num10|)
+                                                      (METAPEG::|parse_num16|))
+                                     (METAPEG::|parse_delimiter|)))))
 (DEFUN METAPEG::|parse_num2| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "num2"
@@ -546,7 +560,9 @@
                                     (METAPEG::SEQ
                                      (METAPEG::MANY1 (METAPEG::|parse_digit2|))
                                      (METAPEG::MANY
-                                      (METAPEG::MATCH-STRING "#"))))))
+                                      (METAPEG::MATCH-STRING "#"))
+                                     (LIST 'METAPEG::ACTION NIL
+                                           'METAPEG::METAPEG-ACTION87)))))
 (DEFUN METAPEG::|parse_prefix2| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "prefix2"
@@ -772,7 +788,9 @@
                                      (METAPEG::MANY1
                                       (METAPEG::|parse_digit10|))
                                      (METAPEG::MANY
-                                      (METAPEG::MATCH-STRING "#"))))))
+                                      (METAPEG::MATCH-STRING "#"))
+                                     (LIST 'METAPEG::ACTION NIL
+                                           'METAPEG::METAPEG-ACTION88)))))
 (DEFUN METAPEG::|parse_prefix10| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "prefix10"
@@ -900,8 +918,14 @@
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "infinity"
                                     (METAPEG::EITHER
-                                     (METAPEG::MATCH-STRING "+inf.0")
-                                     (METAPEG::MATCH-STRING "-inf.0")
+                                     (METAPEG::SEQ
+                                      (METAPEG::MATCH-STRING "+inf.0")
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION89))
+                                     (METAPEG::SEQ
+                                      (METAPEG::MATCH-STRING "-inf.0")
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION90))
                                      (METAPEG::MATCH-STRING "+nan.0")))))
 (DEFUN METAPEG::|parse_suffix| ()
   (LAMBDA (METAPEG::OFFSET)
@@ -965,8 +989,737 @@
                                     (METAPEG::MATCH-CHAR
                                      '(#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9
                                        #\a #\b #\c #\d #\e #\f)))))
+(DEFUN METAPEG::|parse_expression| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "expression"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_variable|)
+                                     (METAPEG::|parse_literal|)
+                                     (METAPEG::|parse_procedure_call|)
+                                     (METAPEG::|parse_lambda_expression|)
+                                     (METAPEG::|parse_conditional|)
+                                     (METAPEG::|parse_assignment|)
+                                     (METAPEG::|parse_derived_expression|)
+                                     (METAPEG::|parse_macro_use|)
+                                     (METAPEG::|parse_macro_block|)))))
+(DEFUN METAPEG::|parse_literal| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "literal"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_quotation|)
+                                     (METAPEG::|parse_self_evaluating|)))))
+(DEFUN METAPEG::|parse_self_evaluating| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "self_evaluating"
+                                    (METAPEG::EITHER (METAPEG::|parse_boolean|)
+                                                     (METAPEG::|parse_number|)
+                                                     (METAPEG::|parse_character|)
+                                                     (METAPEG::|parse_string|)))))
+(DEFUN METAPEG::|parse_quotation| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "quotation"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ
+                                      (METAPEG::MATCH-STRING "\\'")
+                                      (METAPEG::|parse_datum|))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_intertoken_space|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "quote")
+                                                   (METAPEG::|parse_datum|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_procedure_call| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "procedure_call"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_operator|)
+                                                  (METAPEG::MANY
+                                                   (METAPEG::|parse_operand|))
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_operator| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "operator" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_operand| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "operand" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_lambda_expression| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "lambda_expression"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_intertoken_space|)
+                                                  (METAPEG::MATCH-STRING
+                                                   "lambda")
+                                                  (METAPEG::|parse_formals|)
+                                                  (METAPEG::|parse_body|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_formals| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "formals"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_variable|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::|parse_variable|)
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY1
+                                                    (METAPEG::|parse_variable|))
+                                                   (METAPEG::MATCH-STRING ".")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_body| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "body"
+                                    (METAPEG::SEQ
+                                     (METAPEG::MANY
+                                      (METAPEG::|parse_syntax_definition|))
+                                     (METAPEG::MANY
+                                      (METAPEG::|parse_definition|))
+                                     (METAPEG::|parse_sequence|)))))
+(DEFUN METAPEG::|parse_sequence| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "sequence"
+                                    (METAPEG::SEQ
+                                     (METAPEG::MANY (METAPEG::|parse_command|))
+                                     (METAPEG::|parse_expression|)))))
+(DEFUN METAPEG::|parse_command| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "command" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_conditional| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "conditional"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_intertoken_space|)
+                                                  (METAPEG::MATCH-STRING "if")
+                                                  (METAPEG::|parse_test|)
+                                                  (METAPEG::|parse_consequent|)
+                                                  (METAPEG::|parse_alternate|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_test| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "test" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_consequent| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "consequent"
+                                    (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_alternate| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "alternate"
+                                    (METAPEG::OPTIONAL
+                                     (METAPEG::|parse_expression|)))))
+(DEFUN METAPEG::|parse_assignment| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "assignment"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_intertoken_space|)
+                                                  (METAPEG::MATCH-STRING
+                                                   "set!")
+                                                  (METAPEG::|parse_variable|)
+                                                  (METAPEG::|parse_expression|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_itspc| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "itspc"
+                                    (METAPEG::|parse_intertoken_space|))))
+(DEFUN METAPEG::|parse_derived_expression| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "derived_expression"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "cond")
+                                                   (METAPEG::MANY1
+                                                    (METAPEG::|parse_cond_clause|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "cond")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_cond_clause|))
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "else")
+                                                   (METAPEG::|parse_sequence|)
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "case")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::MANY1
+                                                    (METAPEG::|parse_case_clause|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "case")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_case_clause|))
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "else")
+                                                   (METAPEG::|parse_sequence|)
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "case")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_case_clause|))
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "else")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "=>")
+                                                   (METAPEG::|parse_recipient|)
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "and")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_test|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "or")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_test|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "when")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "unless")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "let")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_binding_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "let")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_binding_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "let*")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_binding_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "letrec")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_binding_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "letrec*")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_binding_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "let-values")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_formals|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "let*-values")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_formals|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "case-lambda")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_case-lambda_clause|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "begin")
+                                                   (METAPEG::|parse_sequence|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "do")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_iteration_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_test|)
+                                                   (METAPEG::|parse_do_result|)
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_command|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "delay")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "lazy")
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_cond_clause| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "cond_clause"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_test|)
+                                                   (METAPEG::|parse_sequence|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_test|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_test|)
+                                                   (METAPEG::MATCH-STRING "=>")
+                                                   (METAPEG::|parse_recipient|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_recipient| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "recipient" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_case_clause| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "case_clause"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_datum|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_sequence|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_datum|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "=>")
+                                                   (METAPEG::|parse_recipient|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_binding_spec| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "binding_spec"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_variable|)
+                                                  (METAPEG::|parse_expression|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_iteration_spec| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "iteration_spec"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::|parse_init|)
+                                                   (METAPEG::|parse_step|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::|parse_init|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_case-lambda_clause| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "case-lambda_clause"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_formals|)
+                                                  (METAPEG::|parse_body|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_init| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "init" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_step| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "step" (METAPEG::|parse_expression|))))
+(DEFUN METAPEG::|parse_do_result| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "do_result"
+                                    (METAPEG::OPTIONAL
+                                     (METAPEG::|parse_sequence|)))))
+(DEFUN METAPEG::|parse_macro_use| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "macro_use"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_keyword|)
+                                                  (METAPEG::MANY
+                                                   (METAPEG::|parse_datum|))
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_keyword| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "keyword" (METAPEG::|parse_identifier|))))
+(DEFUN METAPEG::|parse_macro_block| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "macro_block"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "let-syntax")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_syntax_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "letrec-syntax")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_syntax_spec|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_syntax_spec| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "syntax_spec"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_keyword|)
+                                                  (METAPEG::|parse_transformer_spec|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_transformer_spec| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "transformer_spec"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "syntax-rules")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_identifier|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_syntax_rule|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "syntax-rules")
+                                                   (METAPEG::|parse_identifier|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_identifier|))
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_syntax_rule|))
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_syntax_rule| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "syntax_rule"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_pattern|)
+                                                  (METAPEG::|parse_template|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_pattern| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "pattern"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_pattern_identifier|)
+                                     (METAPEG::MATCH-STRING "_")
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY1
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::MATCH-STRING ".")
+                                                   (METAPEG::|parse_pattern|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::|parse_pattern|)
+                                                   (METAPEG::|parse_ellipsis|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::|parse_pattern|)
+                                                   (METAPEG::|parse_ellipsis|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::MATCH-STRING ".")
+                                                   (METAPEG::|parse_pattern|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "#(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "#(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::|parse_pattern|)
+                                                   (METAPEG::|parse_ellipsis|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_pattern|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::|parse_pattern_datum|)))))
+(DEFUN METAPEG::|parse_pattern_datum| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "pattern_datum"
+                                    (METAPEG::EITHER (METAPEG::|parse_string|)
+                                                     (METAPEG::|parse_character|)
+                                                     (METAPEG::|parse_boolean|)
+                                                     (METAPEG::|parse_number|)))))
+(DEFUN METAPEG::|parse_template| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "template"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_pattern_identifier|)
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_template_element|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::MANY1
+                                                    (METAPEG::|parse_template_element|))
+                                                   (METAPEG::MATCH-STRING ".")
+                                                   (METAPEG::|parse_template|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "#(")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_template_element|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::|parse_template_datum|)))))
+(DEFUN METAPEG::|parse_template_element| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "template_element"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_template|)
+                                     (METAPEG::SEQ (METAPEG::|parse_template|)
+                                                   (METAPEG::|parse_ellipsis|))))))
+(DEFUN METAPEG::|parse_template_datum| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "template_datum"
+                                    (METAPEG::|parse_pattern_datum|))))
+(DEFUN METAPEG::|parse_pattern_identifier| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "pattern_identifier"
+                                    (METAPEG::SEQ
+                                     (METAPEG::NEGATE
+                                      (METAPEG::MATCH-STRING "..."))
+                                     (METAPEG::|parse_identifier|)))))
+(DEFUN METAPEG::|parse_ellipsis| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "ellipsis"
+                                    (METAPEG::SEQ
+                                     (METAPEG::FOLLOW
+                                      (METAPEG::|parse_identifier|))
+                                     (METAPEG::MATCH-STRING "...")))))
+(DEFUN METAPEG::|parse_underscore| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "underscore" (METAPEG::MATCH-STRING "_"))))
+(DEFUN METAPEG::|parse_program| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "program"
+                                    (METAPEG::SEQ (METAPEG::|parse_itspc|)
+                                                  (METAPEG::MANY
+                                                   (METAPEG::SEQ
+                                                    (METAPEG::|parse_number|)
+                                                    (METAPEG::|parse_itspc|)))))))
+(DEFUN METAPEG::|parse_command_or_definition| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "command_or_definition"
+                                    (METAPEG::EITHER
+                                     (METAPEG::|parse_definition|)
+                                     (METAPEG::|parse_syntax_definition|)
+                                     (METAPEG::|parse_command|)))))
+(DEFUN METAPEG::|parse_definition| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "definition"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "define")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::|parse_expression|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "define")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::|parse_def_formals|)
+                                                   (METAPEG::MATCH-STRING ")")
+                                                   (METAPEG::|parse_body|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "define-record-type")
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::|parse_constructor|)
+                                                   (METAPEG::|parse_variable|)
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_field_spec|))
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "begin")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_definition|))
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
+(DEFUN METAPEG::|parse_def_formals| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "def_formals"
+                                    (METAPEG::EITHER
+                                     (METAPEG::MANY
+                                      (METAPEG::|parse_variable|))
+                                     (METAPEG::SEQ
+                                      (METAPEG::MANY
+                                       (METAPEG::|parse_variable|))
+                                      (METAPEG::MATCH-STRING ".")
+                                      (METAPEG::|parse_variable|))))))
+(DEFUN METAPEG::|parse_constructor| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "constructor"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_variable|)
+                                                  (METAPEG::MANY
+                                                   (METAPEG::|parse_field_name|))
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_field_spec| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "field_spec"
+                                    (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                  (METAPEG::|parse_field_name|)
+                                                  (METAPEG::|parse_variable|)
+                                                  (METAPEG::MATCH-STRING
+                                                   ")")))))
+(DEFUN METAPEG::|parse_field_name| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "field_name"
+                                    (METAPEG::|parse_identifier|))))
+(DEFUN METAPEG::|parse_syntax_definition| ()
+  (LAMBDA (METAPEG::OFFSET)
+    (METAPEG::BUILD-PARSER-FUNCTION "syntax_definition"
+                                    (METAPEG::EITHER
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "define-syntax")
+                                                   (METAPEG::|parse_keyword|)
+                                                   (METAPEG::|parse_transformer_spec|)
+                                                   (METAPEG::MATCH-STRING ")"))
+                                     (METAPEG::SEQ (METAPEG::MATCH-STRING "(")
+                                                   (METAPEG::|parse_itspc|)
+                                                   (METAPEG::MATCH-STRING
+                                                    "begin")
+                                                   (METAPEG::MANY
+                                                    (METAPEG::|parse_syntax_definition|))
+                                                   (METAPEG::MATCH-STRING
+                                                    ")"))))))
 
  
-(defun METAPEG::METAPEG-ACTION44 (data)  (char-list-to-string (mapcar #'cadr (first data)))  )
-(defun METAPEG::METAPEG-ACTION43 (data)  (format t "comment
+(defun METAPEG::METAPEG-ACTION90 (data)  short-float-negaive-infinity  )
+(defun METAPEG::METAPEG-ACTION89 (data)  short-float-positive-infinity  )
+(defun METAPEG::METAPEG-ACTION88 (data)  (parse-integer (char-list-to-string (car data)))  )
+(defun METAPEG::METAPEG-ACTION87 (data)  (parse-integer (char-list-to-string (car data)) :radix 2)  )
+(defun METAPEG::METAPEG-ACTION86 (data)  (char-list-to-string (mapcar #'cadr (first data)))  )
+(defun METAPEG::METAPEG-ACTION85 (data)  (format t "comment
 ") `(:comment ,(char-list-to-string (mapcar #'cadr (cadar data))))  )
