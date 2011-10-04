@@ -1,4 +1,4 @@
-program <- comment
+program <- comment intertoken_space
 
 datum <- intertoken_space (simple_datum / compound_datum / label "=" datum / label "#") intertoken_space
 simple_datum <- boolean / number / character / string / symbol / bytevector
@@ -10,16 +10,14 @@ abbrev_prefix <- "'" / "`" / ",@" / ","
 vector <- "#(" datum* ")"
 label <- "#" digit10+
 
-
-
 token <- identifier delimiter / boolean delimiter / number delimiter / character delimiter / string/ "(" / ")" / "#(" / "\'" / "\`" / ",@" / "," / "."
 
 delimiter <- whitespace / "(" / ")" / [\"] / ";"
 
-comment <- ("\;" (!newline .)*) / nested_comment
+comment <- (";" (!newline .)*) { (format t "comment\n") `(:comment ,(char-list-to-string (mapcar #'cadr (cadar data)))) } / nested_comment
 nested_comment <- "#|" comment_text comment_cont* "|#"
 
-comment_text <- (!comment_text_taboo .)* { (charl-to-str (mapcar #'cadr (first data))) }
+comment_text <- (!comment_text_taboo .)* { (char-list-to-string (mapcar #'cadr (first data))) }
 comment_text_taboo <- "#|" / "|#"
 comment_cont <- nested_comment comment_text
 

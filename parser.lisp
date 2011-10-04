@@ -1,11 +1,13 @@
 (IN-PACKAGE :METAPEG)
-(DECLAIM (OPTIMIZE (SPEED 3) (SAFETY 0) (DEBUG 0)))
+(DECLAIM (OPTIMIZE (SPEED 0) (SAFETY 0) (DEBUG 0)))
 (DEFUN METAPEG::GENERATED-PARSER ()
   (LET ((METAPEG::*CONTEXT* (MAKE-INSTANCE 'METAPEG::CONTEXT :START-INDEX 0)))
     (FUNCALL (METAPEG::|parse_program|) 0)))
 (DEFUN METAPEG::|parse_program| ()
   (LAMBDA (METAPEG::OFFSET)
-    (METAPEG::BUILD-PARSER-FUNCTION "program" (METAPEG::|parse_comment|))))
+    (METAPEG::BUILD-PARSER-FUNCTION "program"
+                                    (METAPEG::SEQ (METAPEG::|parse_comment|)
+                                                  (METAPEG::|parse_intertoken_space|)))))
 (DEFUN METAPEG::|parse_datum| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "datum"
@@ -117,13 +119,15 @@
     (METAPEG::BUILD-PARSER-FUNCTION "comment"
                                     (METAPEG::EITHER
                                      (METAPEG::SEQ
-                                      (METAPEG::MATCH-STRING "\\;")
-                                      (METAPEG::MANY
-                                       (METAPEG::SEQ
-                                        (METAPEG::NEGATE
-                                         (METAPEG::|parse_newline|))
-                                        (METAPEG::MATCH-ANY-CHAR
-                                         'METAPEG::DUMMY))))
+                                      (METAPEG::SEQ (METAPEG::MATCH-STRING ";")
+                                                    (METAPEG::MANY
+                                                     (METAPEG::SEQ
+                                                      (METAPEG::NEGATE
+                                                       (METAPEG::|parse_newline|))
+                                                      (METAPEG::MATCH-ANY-CHAR
+                                                       'METAPEG::DUMMY))))
+                                      (LIST 'METAPEG::ACTION NIL
+                                            'METAPEG::METAPEG-ACTION43))
                                      (METAPEG::|parse_nested_comment|)))))
 (DEFUN METAPEG::|parse_nested_comment| ()
   (LAMBDA (METAPEG::OFFSET)
@@ -145,7 +149,7 @@
                                        (METAPEG::MATCH-ANY-CHAR
                                         'METAPEG::DUMMY)))
                                      (LIST 'METAPEG::ACTION NIL
-                                           'METAPEG::METAPEG-ACTION199)))))
+                                           'METAPEG::METAPEG-ACTION44)))))
 (DEFUN METAPEG::|parse_comment_text_taboo| ()
   (LAMBDA (METAPEG::OFFSET)
     (METAPEG::BUILD-PARSER-FUNCTION "comment_text_taboo"
@@ -963,4 +967,6 @@
                                        #\a #\b #\c #\d #\e #\f)))))
 
  
-(defun METAPEG::METAPEG-ACTION199 (data)  (charl-to-str (mapcar #'cadr (first data)))  )
+(defun METAPEG::METAPEG-ACTION44 (data)  (char-list-to-string (mapcar #'cadr (first data)))  )
+(defun METAPEG::METAPEG-ACTION43 (data)  (format t "comment
+") `(:comment ,(char-list-to-string (mapcar #'cadr (cadar data))))  )
