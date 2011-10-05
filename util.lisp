@@ -1,3 +1,5 @@
+(in-package :yscheme)
+
 (defun charl-to-str (char-list)
   (reduce #'(lambda (a b) (concatenate 'string a (string b))) char-list :initial-value ""))
 
