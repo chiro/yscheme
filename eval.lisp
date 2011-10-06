@@ -59,8 +59,9 @@
         (scm-eval else (copy-env env)))))
 
 
-(defmethod scm-eval ((exp scm-lambda) env)
-  exp)
+;(defmethod scm-eval ((exp scm-lambda) env)
+;  (with-slots (parms body env) exp
+;    (make-instance 'compound-procedure :parms parms :body body :env env)))
 
 
 (defmethod scm-eval ((exp and-exp) env)
@@ -81,4 +82,10 @@
                           (copy-env env))))))
 
 
+
+(defmethod scm-eval ((exp application) env)
+  (with-slots (proc args) exp
+    (scm-apply (scm-eval proc (copy-env env))
+               (mapcar (lambda (e) (scm-eval e (copy-env env)))
+                       args))))
 

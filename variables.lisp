@@ -15,7 +15,7 @@
 
 (defclass scm-nil       (self-evaluating) ())           ; val = nil
 (defclass scm-boolean   (self-evaluating) ())           ; val = t | nil
-(defclass scm-number    (self-evaluating) ())           ; val = <number>
+(defclass scm-number    (self-evaluating) ())           ; val = number
 (defclass scm-string    (self-evaluating) ())           ; val = string
 (defclass scm-character (self-evaluating) ())           ; val = character
 
@@ -48,6 +48,23 @@
 ;  ())
 
 
+
+;(defclass scm-lambda (scm-exp)
+;  ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
+;   (body :accessor body :initarg :body)                 ; list of scm-exp
+;   (env :accessor env :initarg :env)))
+
+(defclass procedure (scm-exp))
+
+(defclass primitive-procedure (scm-lambda)
+  ((func :accessor func :initarg :func)))               ; cl primitive function
+
+(defclass compound-procedure (scm-lambda)
+  ((parms :accessor parms :initarg :parms)
+   (body :accessor body :initarg :body)
+   (env :accessor env :initarg :env)))
+
+
 (defclass assignment (scm-exp)
   ((var :accessor var :initarg :var)
    (val :accessor val :initarg :val)))
@@ -71,12 +88,6 @@
   ((clauses :accessor clauses :initarg :clauses)))
 
 
-(defclass scm-lambda (scm-exp)
-  ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
-   (body :accessor body :initarg :body)                 ; list of scm-exp
-   (env :accessor env :initarg :env)))
-
-
 (defclass and-exp (scm-exp)
   ((exps :accessor exps :initarg :exps)))
 
@@ -95,4 +106,13 @@
 
 
 (defclass application (scm-exp)
-  (()))
+  ((proc :accessor proc :initarg proc)
+   (args :accessor args :initarg args)))
+
+
+;(defclass case-exp (scm-exp)
+;  ())
+;(defclass do-exp (scm-exp)
+;  ())
+;(defclass do*-exp (scm-exp)
+;  ())
