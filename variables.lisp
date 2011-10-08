@@ -3,7 +3,7 @@
 (defstruct (environment (:constructor make-env)
                         (:conc-name env-)
                         (:copier copy-env))
-  (env nil :type list))                                 ; alist
+  (table nil :type list))                               ; alist (string . scm-obj)
 
 (defclass scm-exp (scm-object) ())
 
@@ -26,14 +26,14 @@
 
 
 
-(defclass cons (scm-exp)
+(defclass scm-cons (scm-exp)
   ((val-car :accessor val-car :initarg :val-car)        ; scm-exp
    (val-cdr :accessor val-cdr :initarg :val-cdr)))      ; scm-exp
 
 
 
 (defclass definition (scm-exp)
-  ((var :accessor var :initarg :var)))                  ; scm-symbol
+  ((sym :accessor sym :initarg :sym)))                  ; scm-symbol
 
 (defclass variable-definition (definition)
   ((val :accessor val :initarg :val)))                  ; scm-exp
@@ -54,19 +54,19 @@
 ;   (body :accessor body :initarg :body)                 ; list of scm-exp
 ;   (env :accessor env :initarg :env)))
 
-(defclass procedure (scm-exp))
+(defclass procedure (scm-exp) ())
 
-(defclass primitive-procedure (scm-lambda)
-  ((func :accessor func :initarg :func)))               ; cl primitive function
+(defclass primitive-procedure (procedure)
+  ((func :accessor func :initarg :func)))               ; cl function
 
-(defclass compound-procedure (scm-lambda)
-  ((parms :accessor parms :initarg :parms)
+(defclass compound-procedure (procedure)
+  ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
    (body :accessor body :initarg :body)
    (env :accessor env :initarg :env)))
 
 
 (defclass assignment (scm-exp)
-  ((var :accessor var :initarg :var)
+  ((sym :accessor sym :initarg :sym)
    (val :accessor val :initarg :val)))
 
 
@@ -95,9 +95,9 @@
   ((exps :accessor exps :initarg :exps)))
 
 (defclass let-exp (scm-exp)
-  ((var :accessor var :initarg var)
-   (binds :accessor binds :initarg binds)
-   (body :accessor body :initarg body)))
+  ((sym :accessor sym :initarg :sym)
+   (binds :accessor binds :initarg :binds)
+   (body :accessor body :initarg :body)))
 
 ;(defclass let*-exp (scm-exp)
 ;  (()))
@@ -106,8 +106,8 @@
 
 
 (defclass application (scm-exp)
-  ((proc :accessor proc :initarg proc)
-   (args :accessor args :initarg args)))
+  ((proc :accessor proc :initarg :proc)
+   (args :accessor args :initarg :args)))
 
 
 ;(defclass case-exp (scm-exp)
