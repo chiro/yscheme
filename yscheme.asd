@@ -5,6 +5,8 @@
   :serial t
   :components ((:file "package")
                (:file "util")
-               (:file "parse"))
+               (:file "parser/generic")
+               (:file "parser/comment")
+               )
   :depends-on (:esrap)
   )
