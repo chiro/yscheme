@@ -1,3 +1,1 @@
-  (define f 1)
-
-(define (fact x) (+ x 1))
+(lambda (x) (+ x 1))
