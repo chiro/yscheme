@@ -13,11 +13,10 @@
 (defun bsl-p (char)
   (eql #\\ char))
 
+(esrap::defrule delimiter
+    (esrap::or ws "(" ")" "\"" ";"))
+
 ;; spaces
-(esrap:defrule atmosphere (esrap::or ws comment))
-
-(esrap:defrule itspc (esrap::* atmosphere))
-
 (esrap:defrule ws
     (esrap::or itlws nl rt))
 

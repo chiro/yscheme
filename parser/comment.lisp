@@ -22,17 +22,19 @@
 (esrap:defrule yscheme::nested-comment
     (esrap::and "#|" comment_text (esrap::* comment_cont) "|#")
   (:destructure (q1 ctext ccont q2)
-                (append (list :nested-comment ctext) ccont))
+                (flatten (cons ctext ccont)))
   )
 
-(esrap:defrule yscheme::comment_text
-    (esrap::* (esrap::and (esrap::! comt_taboo) character))
+(esrap:defrule yscheme::comment-text
+    (esrap::* (esrap::and (esrap::! comt-taboo) character))
   (:lambda (list)
            (charl-to-str (mapcar #'cadr list)))
   )
 
-(esrap:defrule yscheme::comment_cont
-    (esrap::and nested-comment comment_text))
+(esrap:defrule yscheme::comment-cont
+    (esrap::and nested-comment comment-text)
+  (:destructure (nc ct)
+                (flatten (cons nc ct))))
 
-(esrap:defrule comt_taboo
+(esrap:defrule comt-taboo
     (esrap::or "#|" "|#"))
