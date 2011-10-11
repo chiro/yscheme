@@ -77,61 +77,77 @@
 (esrap::defrule num10
     (esrap::and prefix10 complex10)
   (:destructure (pre comp)
-             (cond ((and pre comp) (list pre comp))
-                   (comp comp)
-                   (pre pre)
-                   (t nil)))
+             (cond ((and pre comp) (list :num10 pre comp))
+                   (t (list :num10 comp))))
 )
 
 (esrap::defrule complex10
-    (esrap::or real10
-               (esrap::and real10 "@" real10)
-               (esrap::and real10 "+" ureal10 "i")
-               (esrap::and real10 "-" ureal10 "i")
-               (esrap::and real10 "+i")
-               (esrap::and real10 "-i")
-               (esrap::and "+" ureal10 "i")
-               (esrap::and "-" ureal10 "i")
-               "+i"
-               "-i"))
+    (esrap::or 
+     (esrap::and "+" ureal10 "i")
+     (esrap::and "-" ureal10 "i")
+     (esrap::and real10 "@" real10)
+     (esrap::and real10 "+" ureal10 "i")
+     (esrap::and real10 "-" ureal10 "i")
+     (esrap::and real10 "+i")
+     (esrap::and real10 "-i")
+     real10
+     "+i"
+     "-i"))
 
 (esrap::defrule real10
     (esrap::or (esrap::and sign ureal10)
                infinity)
   (:lambda (data)
-    (if (and (listp data) (= 2 (length data)))
-        (if (null (car data)) (cadr data))
-        data))
+    (if (or (not (listp data)) (car data))
+        data
+        (cadr data)))
 )
 
+
 (esrap::defrule ureal10
-    (esrap::or uinteger10
-               (esrap::and uinteger10 "/" uinteger10)
-               decimal10))
+    (esrap::or (esrap::and uinteger10 "/" uinteger10)
+               decimal10
+               uinteger10))
+               
 
 (esrap::defrule uinteger10
-    (esrap::and (esrap:+ digit10) (esrap:* "#"))
+    (esrap::and +digit10 (esrap:* "#"))
   (:destructure (digs shs)
                 (if (null shs)
-                    digs
-                    (list digs shs))))
+                    (list :integer digs)
+                    (list :integer digs shs))))
 
 (esrap::defrule prefix10
     (esrap::or (esrap::and radix10 exactness)
                (esrap::and exactness radix10))
   (:destructure (p1 p2)
-                (cond ((and p1 p2) (list p1 p2))
-                      (p1 p1)
-                      (p2 p2)
+                (cond ((and p1 p2) (list :prefix p1 p2))
+                      (p1 (list :prefix p1))
+                      (p2 (list :prefix p2))
                       (t nil)))
 )
 
 (esrap::defrule decimal10
-    (esrap::or (esrap::and uinteger10 suffx)
-               (esrap::and "." (esrap:+ digit10) (esrap:* "#") suffix)
-               (esrap::and (esrap:+ digit10)
+    (esrap::or (esrap::and "." +digit10 (esrap:* "#") suffix)
+               (esrap::and +digit10 "." *digit10 (esrap:* "#") suffix)
+               (esrap::and +digit10
                            (esrap:+ "#") "." (esrap:* "#") suffix)
-               ))
+               (esrap::and uinteger10 suffix)
+               )
+  (:lambda (data)
+    (cond ((= (length data) 2)
+           (if (cadr data)
+             (cons :decimal data)
+             (car data)))
+          (t (list :decimal (remove-if #'null data)))))
+)
+
+(esrap::defrule +digit10
+    (esrap:+ digit10)
+  (:lambda (data) (charl-to-str data)))
+(esrap::defrule *digit10
+    (esrap:* digit10)
+  (:lambda (data) (charl-to-str data)))
 
 ;; hex numbers
 (esrap::defrule num16
@@ -172,13 +188,18 @@
     (esrap::or "+inf.0" "-inf.0" "+nan.0"))
 
 (esrap:defrule suffix
-    (esrap::? (esrap::or (esrap::and exponent_marker sign (esrap::+ digit10)))))
+    (esrap::? (esrap::and exponent_marker sign +digit10))
+  (:lambda (data)
+            (when data
+              (list :suffix data)))
+)
 
 (esrap:defrule exponent_marker
     (esrap::or "e" "s" "f" "d" "l"))
 
 (esrap:defrule sign
-    (esrap::? (esrap::or "+" "-")))
+    (esrap::? (esrap::or "+" "-"))
+)
 
 (esrap:defrule exactness
     (esrap::? (esrap::or "#i" "#e")))
@@ -199,7 +220,7 @@
 
 (defun digit2-p (char)
   (find char *digit2*))
-(defun digti8-p (char)
+(defun digit8-p (char)
   (find char *digit8*))
 (defun digit10-p (char)
   (find char *digit10*))
