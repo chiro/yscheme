@@ -1,4 +1,0 @@
-program <- a / b / c
-a <- "a" { (print "yo") 22 }
-b <- "b"
-c <- "c"
