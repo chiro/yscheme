@@ -1,5 +1,46 @@
 
 
+;; 6.1. Equivlence predicates
+
+
+(defgeneric eqv? (obj1 obj2))
+
+(defmethod eqv? (obj1 obj2) (eql obj1 obj2))
+
+(defmethod eqv? ((obj1 scm-boolean) (obj2 scm-boolean))
+  (eql (val obj1) (val obj2)))
+
+(defmethod eqv? ((obj1 scm-symbol) (obj2 scm-symbol))
+  (string= (name obj1) (name obj2)))
+
+;(defmethod eqv? ((obj1 scm-) (obj2 scm-))
+;  ())
+
+(defmethod eqv? ((obj1 scm-character) (obj2 scm-character))
+  (char= (val obj1) (val obj2)))
+
+(defmethod eqv? ((obj1 scm-nil) (obj2 scm-nil)) t)
+
+(defmethod eqv? ((obj1 scm-pair) (obj2 scm-pair))
+  (eql obj1 obj2))
+
+(defmethod eqv? ((obj1 scm-vector) (obj2 scm-vector))
+  (eql obj1 obj2))
+
+(defmethod eqv? ((obj1 scm-string) (obj2 scm-string))
+  (eql obj1 obj2))
+
+(defmethod eqv? ((obj1 scm-procedure) (obj2 scm-procedure))
+  (eql ob1 ob2))
+
+
+(defgeneric eq? (obj1 obj2))
+
+(defmethod eq? ((obj1 ) (obj2 ))
+  (
+
+
+
 ;;; type
 
 (defgeneric boolean? (obj))
@@ -8,7 +49,7 @@
 
 (defgeneric pair? (obj))
 (defmethod pair? ((obj scm-object)) (make-instance 'scm-boolean :val nil))
-(defmethod pair? ((obj scm-cons)) (make-instance 'scm-boolean :val t))
+(defmethod pair? ((obj scm-pair)) (make-instance 'scm-boolean :val t))
 
 (defgeneric symbol? (obj))
 (defmethod symbol? ((obj scm-object)) (make-instance 'scm-boolean :val nil))
@@ -48,26 +89,26 @@
 
 (defgeneric scm-cons (obj0 obj1))
 (defmethod scm-cons ((obj0 scm-object) (obj1 scm-object))
-  (make-instance 'scm-cons :val-car obj0 :val-cdr obj1))
+  (make-instance 'scm-pair :val-car obj0 :val-cdr obj1))
 
 (defgeneric scm-car (obj))
-(defmethod scm-car ((obj scm-cons)) (val-car obj))
+(defmethod scm-car ((obj scm-pair)) (val-car obj))
 
 (defgeneric scm-cdr (obj))
-(defmethod scm-car ((obj scm-cons)) (val-cdr obj))
+(defmethod scm-car ((obj scm-pair)) (val-cdr obj))
 
 (defgeneric scm-list (&rest objs))
 (defmethod scm-list (&rest objs);
   (labels ((rec (objs)
              (if objs
-                 (make-instance 'scm-cons
+                 (make-instance 'scm-pair
                                 :val-car (car objs)
                                 :val-cdr (rec (cdr objs)))
                  (make-instance 'scm-nil))))
     (rec objs)))
 
 (defgeneric scm-append (obj0 obj1))
-(defmethod scm-append ((obj0 scm-cons) (obj1 scm-cons))
+(defmethod scm-append ((obj0 scm-pair) (obj1 scm-pair))
   (labels ((rec (lst0 lst1)
              (if (scm-nullp (val-cdr lst0))
                  lst1
@@ -77,11 +118,11 @@
         (rec obj0 obj1))))
 
 (defgeneric scm-reverse (obj))
-(defmethod scm-reverse ((obj scm-cons))
+(defmethod scm-reverse ((obj scm-pair))
   (labels ((iter (rest result)
              (if (scm-pairp (val-cdr rest))
                  (iter (val-cdr rest)
-                       (make-instance 'scm-cons
+                       (make-instance 'scm-pair
                                       :val-car (val-car rest)
                                       :val-cdr result))
                  result)))
