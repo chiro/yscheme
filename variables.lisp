@@ -1,9 +1,13 @@
 (defclass scm-object () ())
 
-(defstruct (environment (:constructor make-env)
-                        (:conc-name env-)
-                        (:copier copy-env))
-  (table nil :type list))                               ; alist (string . scm-obj)
+;(defstruct (environment (:constructor make-env)
+;                        (:conc-name env-)
+;                        (:copier copy-env))
+;  (table nil :type list))                               ; alist (string . scm-obj)
+
+(defclass scm-undefined (scm-object) ())
+
+(defvar *undefined* (make-instance 'scm-undefined))
 
 (defclass scm-form (scm-object) ())
 
@@ -102,14 +106,19 @@
 
 (defclass cond-clause (clause)
   ((test :accessor test :initarg :test)))
+
 (defclass cond-clause-with-proc (cond-clause) ())
-(defclass cond-end-clause (clause) ())
+
+(defclass cond-else-clause (clause) ())
 
 (defclass case-clause (clause)
-  ((datum :accessor datum :initarg :datum)))
+  ((datums :accessor datum :initarg :datum)))
+
 (defclass case-clause-with-proc (case-clause) ())
-(defclass case-end-clause (clause) ())
-(defclass case-end-clause-with-proc (end-clause) ())
+
+(defclass case-else-clause (clause) ())
+
+(defclass case-else-clause-with-proc (else-clause) ())
 
 
 (defclass cond-exp (scm-form)
@@ -130,7 +139,7 @@
 
 (defclass binding (scm-form)
   ((sym :accessor sym :initarg :sym)
-   (val :accessor val :initarg :val)))
+   (init :accessor init :initarg :init)))
 
 (defclass let-exp (scm-form)
   ((binds :accessor binds :initarg :binds)              ; list of binding
@@ -138,10 +147,9 @@
 
 (defclass let*-exp (let-exp) ())
 
-(defclass letrec-exp (scm-form)
-  (()));
+(defclass letrec-exp (let-exp) ())
 
-(defclass letrec*-exp (letrec-exp) ())
+(defclass letrec*-exp (let-exp) ())
 
 
 ;;; 4.2.3. Sequencing
@@ -152,10 +160,17 @@
 
 ;;; 4.2.4. Iteration
 
+(defclass step-binding (binding)
+  ((step :accessor step :initarg :step)))
+
+(defclass do-end-clause (clause)
+  ((test :accessor test :initarg :test)))
+
 (defclass do-exp (scm-form)
-  ((symlist :accessor symlist :initarg :symlist)
-   (endlist :accessor endlist :initarg :endlist)
-   (command :accessor command :initarg :command)))
+  ((binds :accessor binds :initarg :binds)             ; list of step-binding
+   (end :accessor end :initarg :end)                   ; do-end-clause
+   (body :accessor body :initarg :body)))
 
 (defclass named-let-exp (let-exp)
-  ((name :accessor name :initarg :name)))
+  ((sym :accessor sym :initarg :sym)))
+

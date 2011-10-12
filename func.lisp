@@ -30,11 +30,8 @@
 
 (defmethod scm-apply ((proc compound-procedure) args)
   (with-slots (parms body env) proc
-    (let ((env (copy-env env)))
-      (dolist (new-entry (mapcar #'list parms args))
-        (destructuring-bind (key val) new-entry
-          (setf (env-table env) (adjoin-to-env key val env))))
-      (scm-eval body env))))
+    (let ((new-frame (mapcar #'cons parms args)))
+      (scm-eval body (cons new-frame env)))))
 
 
 
@@ -42,57 +39,58 @@
   (:documentation "clauseのexpsを評価すべきか否か、すべきならその値を第2値で返す"))
 
 (defmethod scm-clause-eval-p ((clause clause) env &key)
-  （values t
-           (scm-eval (scm-eval (make-insance 'begin :exps (exps clause))
-                               (copy-env env))))
+  (scm-eval (scm-eval (make-insance 'begin :exps (exps clause))
+                      (copy-env env))))
 
 (defmethod scm-clause-eval-p ((clause cond-clause) env &key)
   (with-slots (test exps) clause
     (aif (scm-truep (scm-eval test (copy-env env)))
          (if (null exps)
              it
-             (call-next-method))
-         (values nil nil))))
+             (call-next-method)))))
 
 (defmethod scm-clause-eval-p ((clause cond-clause-with-proc) env &key)
   (with-slots (test exps) clause
     (aif (scm-truep (scm-eval test (copy-env env)))
-         (values t (scm-apply (car exps) it))
+         (scm-apply (car exps) it))))
          ;; => を読んだ段階で (car exps) は scm-procedure
-         (values nil nil))))
 
-(defmethod scm-clause-eval-p ((clause cond-end-clause) env &key keyval)
+(defmethod scm-clause-eval-p ((clause cond-else-clause) env &key)
   (call-next-method))
 
 (defmethod scm-clause-eval-p ((clause case-clause) env &key keyval)
-  (with-slots (datum exps) clause
-    (if (eqv? keyval (scm-eval datum (copy-env env)))
-        (call-next-method)
-        (values nil nil))))
+  (with-slots (datums exps) clause
+    (let ((datvals (mapcar (lambda (dat) (scm-eval dat (copy-env))) datums)))
+      (if (member keyval datvals :test #'eqv?)
+          (call-next-method)))))
 
 (defmethod scm-clause-eval-p ((clause case-clause-with-proc) env &key keyval)
-  (with-slots (datum exps) clause
-    (if (eqv? keyval (scm-eval datum (copy-env env)))
-        (values t (scm-apply (car exps) keyval))
-        (values nil nil))))
+  (with-slots (datums exps) clause
+    (let ((datvals (mapcar (lambda (dat) (scm-eval dat (copy-env))) datums)))
+      (if (member keyval datvals :test #'eqv?)
+          (scm-apply (car exps) keyval)))))
 
-(defmethod scm-clause-eval-p ((clause case-end-clause) env &key keyval)
+(defmethod scm-clause-eval-p ((clause case-else-clause) env &key keyval)
   (call-next-method))
 
-(defmethod scm-clause-eval-p ((clause case-end-clause-with-proc) env &key keyval)
-  (values t (scm-apply (car exps) keyval))
+(defmethod scm-clause-eval-p ((clause case-else-clause-with-proc) env &key keyval)
+  (scm-apply (car exps) keyval))
+
+(defmethod scm-clause-eval-p ((clause do-end-clause) env &key)
+  (with-slots (test exps) clause
+    (if (scm-truep (scm-eval test (copy-env env)))
+        (call-next-method))))
 
 
 
-(defun adjoin-to-env (sym val env)
-  (with-slots (name) sym
-    (with-slots (table) env
-      (acons name val
-             (aif (assoc name table :test #'string=)
-                  (remove it table :test #'equalp)
-                  table)))))
 
+;; env : ((("a" . 10) ("b" . 100)) (("c" . 1000) ("a" . 200)))
 
+(defun assoc-env (sym env)
+  (if env
+      (aif (assoc (name sym) (car env) #'string=)
+           it
+           (get-entry sym (cdr env)))))
 
 
 
