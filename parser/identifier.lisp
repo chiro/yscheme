@@ -19,15 +19,24 @@
            (eql #\| char))))
 
 ;; syntax rule
-
 (esrap:defrule yscheme::identifier
+    (esrap::or syntactic_keyword
+               identifier_aux)
+  (:lambda (data)
+    (if (listp data) data
+        (list :keyword data))))
+
+
+(esrap:defrule yscheme::identifier_aux
     (esrap::and intertoken_space
                 (esrap::or (esrap::and initial (esrap::* subsequent))
                            (esrap::and "|" (esrap::* symbol_element) "|")
                            peculiar_identifier)
                 (esrap::& delimiter)
                 intertoken_space)
-  (:lambda (x) (list :identifier (cadr x)))
+  (:lambda (x) (list :variable (reduce (lambda (x y) (concatenate 'string x y))
+                                       (mapcar #'string (flatten (cadr x)))
+                                       :initial-value "")))
   )
 
 (esrap::defrule yscheme::initial
@@ -55,13 +64,18 @@
     (esrap::or explicit_sign "." "@"))
 
 (esrap::defrule yscheme::inline_hex_escape
-    (esrap::and bslash "x" hex_scalar_value ";"))
+    (esrap::and bslash "x" hex_scalar_value ";")
+  (:destructure (bs x hsv sc)
+                (code-char (parse-integer (cadr hsv) :radix 16)))
+;                (list :inline_hex_escape (cadr hsv)))
+)
 
 (esrap::defrule yscheme::hex_scalar_value
-    (esrap::+ hex_digit))
+    (esrap::+ hex_digit)
+  (:lambda (hsv) (list :hex_scalar (charl-to-str hsv))))
 
 (esrap::defrule yscheme::symbol_element
-    (sm-taboo-p character))
+    (se-taboo-p character))
 
 (esrap::defrule yscheme::non_digit
     (esrap::or dot_subsequent explicit_sign))
@@ -76,7 +90,12 @@
     (esrap::or explicit_sign
                (esrap::and explicit_sign sign_subsequent (esrap::* subsequent))
                (esrap::and explicit_sign "." dot_subsequent (esrap::* subsequent))
-               (esrap::and "." non_digit (esrap::* subsequent))))
+               (esrap::and "." non_digit (esrap::* subsequent)))
+  (:lambda (data)
+    (if (not (listp data))
+        (list data)
+        data))
+)
 
 (esrap::defrule yscheme::syntactic_keyword
     (esrap::or expression_keyword "else" "=>" "define" "unquote-splicing" "unquote"))

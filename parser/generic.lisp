@@ -23,6 +23,6 @@
 (esrap:defrule nl (nl-p character))
 (esrap:defrule rt (rt-p character))
 (esrap:defrule itlws (esrap::or " " "	"))
-(esrap:defrule line-ending (esrap::or nl rt))
+(esrap:defrule line_ending (esrap::or nl rt))
 
 (esrap:defrule bslash (bsl-p character))

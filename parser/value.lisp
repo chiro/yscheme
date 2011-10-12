@@ -13,9 +13,10 @@
 ;; character
 (esrap::defrule yscheme::scm_character
     (esrap::and intertoken_space
-                (esrap::or (esrap::and bslash
-                                       (esrap::or character_name character))
-                           (esrap::and bslash "x" hex_scalar_value))
+                (esrap::or
+                 (esrap::and bslash "x" hex_scalar_value)
+                 (esrap::and bslash (esrap::or character_name character))
+                 )
                 (esrap:& delimiter)
                 intertoken_space)
   (:lambda (sp) sp))
@@ -38,7 +39,7 @@
                 (esrap::* scm_string_element)
                 "\""
                 intertoken_space)
-  (:destructure (isp c1 str c2)
+  (:destructure (isp c1 str c2 isp2)
                 (list :string str)))
 
 (esrap::defrule yscheme::scm_string_element

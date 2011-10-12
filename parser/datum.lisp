@@ -7,8 +7,7 @@
                compound_datum
                (esrap::and label "=" datum)
                (esrap::and label "#"))
-  (:lambda (dt)
-    (list :datum dt)))
+)
 
 (esrap:defrule simple_datum
     (esrap::or scm_boolean
@@ -34,9 +33,9 @@
                abbreviation
                )
   (:lambda (data)
-    (cond ((= (length data) 4) (list :scm-list data))
-          ((= (length data) 5) (list :scm-list (mapcar #'car (caddr data))))
-          (t (list :scm-dotted-list (caddr data) (car (cdddddr data))))))
+    (cond ((= (length data) 5) (list :scm-list (mapcar #'car (caddr data))))
+          ((= (length data) 8) (list :scm-dotted-list (mapcar #'car (caddr data)) (caddr (cdddr data))))
+          (t (list :scm-abbreviation data))));(caddr data) (car (cdddr (cddr data)))))))
 )
 
 (esrap:defrule abbreviation

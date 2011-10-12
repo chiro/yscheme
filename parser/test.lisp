@@ -10,3 +10,11 @@
 
 (defun ittspc-p (lst)
   (and (listp lst) (eql (car lst) :intertoken_space)))
+
+(esrap:defrule identifier_seq
+    (esrap::and intertoken_space
+               (esrap:* (esrap::and identifier
+                                    intertoken_space)))
+  (:destructure (is nums)
+                (mapcar #'car nums))
+)

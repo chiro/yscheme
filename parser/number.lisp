@@ -10,23 +10,34 @@
 
 ;; binary numbers
 (esrap::defrule num2
-    (esrap::and prefix2 complex2))
+    (esrap::and prefix2 complex2)
+  (:destructure (pre comp)
+                (cond ((and pre comp) (list :num2 pre comp))
+                      (t (list :num2 comp))))
+)
 
 (esrap::defrule complex2
-    (esrap::or real2
-               (esrap::and real2 "@" real2)
-               (esrap::and real2 "+" ureal2 "i")
-               (esrap::and real2 "-" ureal2 "i")
-               (esrap::and real2 "+i")
-               (esrap::and real2 "-i")
-               (esrap::and "+" ureal2 "i")
-               (esrap::and "-" ureal2 "i")
-               "+i"
-               "-i"))
+    (esrap::or
+     (esrap::and "+" ureal2 "i")
+     (esrap::and "-" ureal2 "i")
+     (esrap::and real2 "@" real2)
+     (esrap::and real2 "+" ureal2 "i")
+     (esrap::and real2 "-" ureal2 "i")
+     (esrap::and real2 "+i")
+     (esrap::and real2 "-i")
+     real2
+     "+i"
+     "-i"))
+
 
 (esrap::defrule real2
     (esrap::or (esrap::and sign ureal2)
-               infinity))
+               infinity)
+  (:lambda (data)
+    (if (or (not (listp data)) (car data))
+        data
+        (cadr data)))
+)
 
 (esrap::defrule ureal2
     (esrap::or uinteger2
@@ -34,44 +45,19 @@
                ))
 
 (esrap::defrule uinteger2
-    (esrap::and (esrap:+ digit2) (esrap:* "#")))
+    (esrap::and (esrap:+ digit2) (esrap:* "#"))
+  (:destructure (digs shs)
+                (remove-if #'null (list :integer (charl-to-str digs) shs))))
+
 
 (esrap::defrule prefix2
     (esrap::or (esrap::and radix2 exactness)
-               (esrap::and exactness radix2)))
+               (esrap::and exactness radix2))
+  (:destructure (p1 p2)
+                (cond ((and (null p1) (null p2)) nil)
+                      (t (remove-if #'null (list :prefix p1 p2)))))
+)
 
-
-;; octet numbers
-(esrap::defrule num8
-    (esrap::and prefix8 complex8))
-
-(esrap::defrule complex8
-    (esrap::or real8
-               (esrap::and real8 "@" real8)
-               (esrap::and real8 "+" ureal8 "i")
-               (esrap::and real8 "-" ureal8 "i")
-               (esrap::and real8 "+i")
-               (esrap::and real8 "-i")
-               (esrap::and "+" ureal8 "i")
-               (esrap::and "-" ureal8 "i")
-               "+i"
-               "-i"))
-
-(esrap::defrule real8
-    (esrap::or (esrap::and sign ureal8)
-               infinity))
-
-(esrap::defrule ureal8
-    (esrap::or uinteger8
-               (esrap::and uinteger8 "/" uinteger8)
-               ))
-
-(esrap::defrule uinteger8
-    (esrap::and (esrap:+ digit8) (esrap:* "#")))
-
-(esrap::defrule prefix8
-    (esrap::or (esrap::and radix8 exactness)
-              (esrap::and exactness radix8)))
 
 ;; decimal numbers
 (esrap::defrule num10
@@ -149,37 +135,105 @@
     (esrap:* digit10)
   (:lambda (data) (charl-to-str data)))
 
+;; octet numbers
+(esrap::defrule num8
+    (esrap::and prefix8 complex8)
+  (:destructure (pre comp)
+                (cond ((and pre comp) (list :num8 pre comp))
+                      (t (list :num8 comp))))
+)
+
+(esrap::defrule complex8
+    (esrap::or
+     (esrap::and "+" ureal8 "i")
+     (esrap::and "-" ureal8 "i")
+     (esrap::and real8 "@" real8)
+     (esrap::and real8 "+" ureal8 "i")
+     (esrap::and real8 "-" ureal8 "i")
+     (esrap::and real8 "+i")
+     (esrap::and real8 "-i")
+     real8
+     "+i"
+     "-i"))
+
+
+(esrap::defrule real8
+    (esrap::or (esrap::and sign ureal8)
+               infinity)
+  (:lambda (data)
+    (if (or (not (listp data)) (car data))
+        data
+        (cadr data)))
+)
+
+(esrap::defrule ureal8
+    (esrap::or uinteger8
+               (esrap::and uinteger8 "/" uinteger8)
+               ))
+
+(esrap::defrule uinteger8
+    (esrap::and (esrap:+ digit8) (esrap:* "#"))
+  (:destructure (digs shs)
+                (remove-if #'null (list :integer (charl-to-str digs) shs))))
+
+
+(esrap::defrule prefix8
+    (esrap::or (esrap::and radix8 exactness)
+               (esrap::and exactness radix8))
+  (:destructure (p1 p8)
+                (cond ((and (null p1) (null p8)) nil)
+                      (t (remove-if #'null (list :prefix p1 p8)))))
+)
+
 ;; hex numbers
 (esrap::defrule num16
-    (esrap::and prefix16 complex16))
+    (esrap::and prefix16 complex16)
+  (:destructure (pre comp)
+                (cond ((and pre comp) (list :num16 pre comp))
+                      (t (list :num16 comp))))
+)
 
 (esrap::defrule complex16
-    (esrap::or real16
-               (esrap::and real16 "@" real16)
-               (esrap::and real16 "+" ureal16 "i")
-               (esrap::and real16 "-" ureal16 "i")
-               (esrap::and real16 "+i")
-               (esrap::and real16 "-i")
-               (esrap::and "+" ureal16 "i")
-               (esrap::and "-" ureal16 "i")
-               "+i"
-               "-i"))
+    (esrap::or
+     (esrap::and "+" ureal16 "i")
+     (esrap::and "-" ureal16 "i")
+     (esrap::and real16 "@" real16)
+     (esrap::and real16 "+" ureal16 "i")
+     (esrap::and real16 "-" ureal16 "i")
+     (esrap::and real16 "+i")
+     (esrap::and real16 "-i")
+     real16
+     "+i"
+     "-i"))
+
 
 (esrap::defrule real16
     (esrap::or (esrap::and sign ureal16)
-               infinity))
+               infinity)
+  (:lambda (data)
+    (if (or (not (listp data)) (car data))
+        data
+        (cadr data)))
+)
 
 (esrap::defrule ureal16
     (esrap::or uinteger16
                (esrap::and uinteger16 "/" uinteger16)
-               decimal16))
+               ))
 
 (esrap::defrule uinteger16
-    (esrap::and (esrap::+ digit16) (esrap::* "#")))
+    (esrap::and (esrap:+ digit16) (esrap:* "#"))
+  (:destructure (digs shs)
+                (remove-if #'null (list :integer (charl-to-str digs) shs))))
+
 
 (esrap::defrule prefix16
     (esrap::or (esrap::and radix16 exactness)
-               (esrap::and exactness radix16)))
+               (esrap::and exactness radix16))
+  (:destructure (p1 p8)
+                (cond ((and (null p1) (null p8)) nil)
+                      (t (remove-if #'null (list :prefix p1 p8)))))
+)
 
 
 ;; ==================================================
@@ -191,7 +245,7 @@
     (esrap::? (esrap::and exponent_marker sign +digit10))
   (:lambda (data)
             (when data
-              (list :suffix data)))
+              (remove-if #'null (list :suffix data))))
 )
 
 (esrap:defrule exponent_marker
@@ -235,6 +289,4 @@
     (digit10-p character))
 (esrap:defrule digit16
     (digit16-p character))
-
-
 
