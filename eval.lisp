@@ -81,7 +81,7 @@
 (defmethod scm-eval ((exp cond-exp) env)
   (labels ((rec (clauses)
              (if (null clauses)
-                 *undefined*
+                 +undefined+
                  (aif (scm-clause-eval-p (car clause) env)
                       it
                       (rec (cdr clauses))))))
@@ -91,7 +91,7 @@
   (let ((keyval (scm-eval (key exp) env)))
     (labels ((rec (clauses)
                (if (null clauses)
-                   *undefined*
+                   +undefined+
                    (aif (scm-clause-eval-p (car clause) env :keyval keyval)
                         it
                         (rec (cdr clauses))))))
@@ -147,7 +147,7 @@
 (defmethod scm-eval ((exp letrec-exp) env)
   (with-slots (binds body) exp
     (let ((new-frame
-           (mapcar (lambda (bind) (cons (sym bind) *undefined*))
+           (mapcar (lambda (bind) (cons (sym bind) +undefined+))
                    binds)))
       (dolist (bind binds)
         (setf (cdr (assoc (name (sym bind)) new-frame))
@@ -158,7 +158,7 @@
 (defmethod scm-eval ((exp letrec*-exp) env)
   (with-slots (binds body) exp
     (let ((new-frame
-           (mapcar (lambda (bind) (cons (sym bind) *undefined*))
+           (mapcar (lambda (bind) (cons (sym bind) +undefined+))
                    binds)))
       (dolist (bind binds)
         (setf (cdr (assoc (name (sym bind)) new-frame))
@@ -171,7 +171,7 @@
 (defmethod scm-eval ((exp begin) env)
   (aif (last1 (mapcar (lambda (e) (scm-eval e env)) (exps exp)))
        it
-       *undefined*))
+       +undefined+))
 
 
 ;;; 4.2.4. Iteration

@@ -1,13 +1,8 @@
 (defclass scm-object () ())
 
-;(defstruct (environment (:constructor make-env)
-;                        (:conc-name env-)
-;                        (:copier copy-env))
-;  (table nil :type list))                               ; alist (string . scm-obj)
-
 (defclass scm-undefined (scm-object) ())
 
-(defvar *undefined* (make-instance 'scm-undefined))
+(defvar +undefined+ (make-instance 'scm-undefined))
 
 (defclass scm-form (scm-object) ())
 
@@ -19,9 +14,13 @@
 
 (defclass scm-nil       (self-evaluating) ())           ; val = nil
 (defclass scm-boolean   (self-evaluating) ())           ; val = t | nil
-(defclass scm-number    (self-evaluating) ())           ; val = number
 (defclass scm-string    (self-evaluating) ())           ; val = string
 (defclass scm-character (self-evaluating) ())           ; val = character
+(defclass scm-vector    (self-evaluating) ())           ; val = vector
+
+(defvar +true+ (make-instance 'scm-boolean :val t))
+(defvar +false+ (make-instance 'scm-boolean :val nil))
+
 
 
 
@@ -51,6 +50,7 @@
 
 ;(defclass record-type-definition (definition)
 ;  ())
+
 
 
 
@@ -173,4 +173,3 @@
 
 (defclass named-let-exp (let-exp)
   ((sym :accessor sym :initarg :sym)))
-

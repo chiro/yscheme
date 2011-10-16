@@ -1,20 +1,30 @@
+(defmacro new (class &rest initargs)
+  `(make-instance ,class ,@initargs))
+
+
+
 (defgeneric scm-truep (obj))
-(defmethod scm-truep (obj) obj)
+(defmethod scm-truep ((obj scm-object)) obj)
 (defmethod scm-truep ((obj scm-boolean)) (val obj))
 
 
+(defgeneric scm-not (obj))
+(defmethod scm-not ((obj scm-object)) nil)
+(defmethod scm-not ((obj scm-boolean)) (not (val obj)))
+
+
 (defgeneric scm-nullp (obj))
-(defmethod scm-nullp (obj) nil)
+(defmethod scm-nullp ((obj scm-object)) nil)
 (defmethod scm-nullp ((obj scm-nil)) t)
 
 
 (defgeneric scm-pairp (obj))
-(defmethod scm-pairp (obj) nil)
+(defmethod scm-pairp ((obj scm-object)) nil)
 (defmethod scm-pairp ((obj scm-pair)) t)
 
 
 (defgeneric scm-dotted-list-p (obj))
-(defmethod scm-dotted-list-p (obj) nil)
+(defmethod scm-dotted-list-p ((obj scm-object)) nil)
 (defmethod scm-dotted-list-p ((obj scm-pair))
   (labels ((rec (obj)
              (if (null (val-cdr nil)) nil (rec (val-cdr obj)))))
