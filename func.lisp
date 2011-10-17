@@ -2,30 +2,11 @@
   `(make-instance ,class ,@initargs))
 
 
+(define-predicate scm-truep ((obj scm-boolean)) obj (val obj))
+(define-predicate scm-nullp ((obj scm-nil)) nil t)
+(define-predicate scm-pairp ((obj scm-pair)) nil t)
 
-(defgeneric scm-truep (obj))
-(defmethod scm-truep ((obj scm-object)) obj)
-(defmethod scm-truep ((obj scm-boolean)) (val obj))
-
-
-(defgeneric scm-not (obj))
-(defmethod scm-not ((obj scm-object)) nil)
-(defmethod scm-not ((obj scm-boolean)) (not (val obj)))
-
-
-(defgeneric scm-nullp (obj))
-(defmethod scm-nullp ((obj scm-object)) nil)
-(defmethod scm-nullp ((obj scm-nil)) t)
-
-
-(defgeneric scm-pairp (obj))
-(defmethod scm-pairp ((obj scm-object)) nil)
-(defmethod scm-pairp ((obj scm-pair)) t)
-
-
-(defgeneric scm-dotted-list-p (obj))
-(defmethod scm-dotted-list-p ((obj scm-object)) nil)
-(defmethod scm-dotted-list-p ((obj scm-pair))
+(define-predicate scm-dotted-list-p ((obj scm-pair)) nil
   (labels ((rec (obj)
              (if (null (val-cdr nil)) nil (rec (val-cdr obj)))))
     (rec obj)))
@@ -101,32 +82,3 @@
       (aif (assoc (name sym) (car env) #'string=)
            it
            (get-entry sym (cdr env)))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-;(defun read-exp ()
-;  (labels ((legal-parens (line count)
-;             (let ((chars (concatenate 'list line)))
-;               (map '
-;
-;
-;(and (cond ((char= (car chars) #\() (incf count))
-;                                 ((char= (car chars) #\)) (decf count))
-;                                 (t t))
-;                           (/= count 0))))))
-;    (do* ((lines (read-line *query-io*))
-;          (count (legal-parens line 0) (legal-parens line count)))
-;         ((zerop count)
-

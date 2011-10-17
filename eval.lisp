@@ -122,7 +122,6 @@
 
 
 ;;; 4.2.2. Binding constructs
-;;; 以下 environment 間違ってる
 
 (defmethod scm-eval ((exp let-exp) env)
   (with-slots (binds body) exp
@@ -165,6 +164,7 @@
               (scm-eval (init bind) (cons new-frame env))))
       (scm-eval (make-instance 'begin :exps body)
                 (cons new-frame env)))))
+
 
 ;;; 4.2.3. Sequencing
 
