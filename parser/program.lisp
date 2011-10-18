@@ -29,14 +29,14 @@
     (esrap::or (esrap::and intertoken_space
                            "(" intertoken_space
                            "define" intertoken_space
-                           variable intertoken_space
+                           scm_variable intertoken_space
                            expression intertoken_space
                            ")")
                (esrap::and intertoken_space
                            "(" intertoken_space
                            "define" intertoken_space
                            "(" intertoken_space
-                           variable intertoken_space
+                           scm_variable intertoken_space
                            def_formals intertoken_space
                            ")" intertoken_space
                            body intertoken_space
@@ -45,9 +45,9 @@
                            "(" intertoken_space
                            "define-record-type"
                            intertoken_space
-                           variable intertoken_space
+                           scm_variable intertoken_space
                            constructor
-                           variable intertoken_space
+                           scm_variable intertoken_space
                            (esrap::* field_spac) intertoken_space
                            ")")
                (esrap::and intertoken_space
@@ -60,18 +60,18 @@
 )
 
 (esrap::defrule def_formals
-    (esrap::or (esrap::* (esrap::and variable intertoken_space))
-               (esrap::and (esrap::* variable)
+    (esrap::or (esrap::* (esrap::and scm_variable intertoken_space))
+               (esrap::and (esrap::* scm_variable)
                            intertoken_space
                            "." intertoken_space
-                           variable)
+                           scm_variable)
                )
 )
 
 (esrap::defrule constructor
     (esrap::and intertoken_space
                 "(" intertoken_space
-                variable intertoken_space
+                scm_variable intertoken_space
                 (esrap::* field_name) intertoken_space
                 ")")
 )
@@ -80,13 +80,13 @@
     (esrap::or (esrap::and intertoken_space
                            "(" intertoken_space
                            field_name intertoken_space
-                           variable intertoken_space
+                           scm_variable intertoken_space
                            ")")
                (esrap::and intertoken_space
                            "(" intertoken_space
                            field_name intertoken_space
-                           variable intertoken_space
-                           variable intertoken_space
+                           scm_variable intertoken_space
+                           scm_variable intertoken_space
                            ")")
                )
 )
