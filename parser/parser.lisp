@@ -13,12 +13,12 @@
     (let ((str (read-stream-to-string stream)))
       (esrap::parse comp str))))
 
-(esrap::defrule yscheme::program
-    (esrap::and intertoken_space
-               (esrap::* (esrap::and datum intertoken_space)))
-  (:destructure (sp ast)
-                (mapcar #'car ast))
-)
+;; (esrap::defrule yscheme::program
+;;     (esrap::and intertoken_space
+;;                (esrap::* (esrap::and datum intertoken_space)))
+;;   (:destructure (sp ast)
+;;                 (mapcar #'car ast))
+;; )
 
 (defun parse-program-from-file (filepath)
   (parse-from-file filepath 'yscheme::program))

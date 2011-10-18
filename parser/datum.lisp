@@ -33,9 +33,9 @@
                abbreviation
                )
   (:lambda (data)
-    (cond ((= (length data) 5) (list :scm-list (mapcar #'car (caddr data))))
+    (cond ((= (length data) 5) (cons :scm-list (mapcar #'car (caddr data))))
           ((= (length data) 8) (list :scm-dotted-list (mapcar #'car (caddr data)) (caddr (cdddr data))))
-          (t (list :scm-abbreviation data))));(caddr data) (car (cdddr (cddr data)))))))
+          (t (cons :scm-abbreviation data))))
 )
 
 (esrap:defrule abbreviation

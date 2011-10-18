@@ -12,6 +12,8 @@
                (:file "parser/value")
                (:file "parser/number")
                (:file "parser/datum")
+               (:file "parser/expression")
+               (:file "parser/program")
                (:file "parser/parser")
                )
   :depends-on (:esrap)

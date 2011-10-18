@@ -104,5 +104,6 @@
     (esrap::or "quote" "lambda" "if" "set!" "begin" "cond" "and" "or" "case" "letrec"
                "let*" "let" "do" "delay" "quasiquote"))
 
-(esrap::defrule yscheme::variable
-    (esrap::and (esrap::not syntactic_keyword) identifier))
+(esrap::defrule yscheme::scm_variable
+    (esrap::and (esrap::! syntactic_keyword) identifier)
+  (:destructure (ns id) id))

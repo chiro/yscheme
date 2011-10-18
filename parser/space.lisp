@@ -7,6 +7,7 @@
 
 (esrap:defrule yscheme::intertoken_space
     (esrap::* atmosphere)
-  (:lambda (atms)
-    (cons :intertoken_space (mapcar #'cdr atms)))
+  (:constant nil)
+  ;; (:lambda (atms)
+  ;;   (cons :intertoken_space (mapcar #'cdr atms)))
 )
