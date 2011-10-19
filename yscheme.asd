@@ -5,16 +5,22 @@
   :serial t
   :components ((:file "package")
                (:file "util")
-               (:file "parser/generic")
-               (:file "parser/space")
-               (:file "parser/comment")
-               (:file "parser/identifier")
-               (:file "parser/value")
-               (:file "parser/number")
-               (:file "parser/datum")
-               (:file "parser/expression")
-               (:file "parser/program")
-               (:file "parser/parser")
+
+               (:module parser
+                        :serial t
+                        :components ((:file "generic")
+                                     (:file "space")
+                                     (:file "comment")
+                                     (:file "identifier")
+                                     (:file "value")
+                                     (:file "number")
+                                     (:file "datum")
+                                     (:file "expression")
+                                     (:file "program")
+                                     (:file "parser")))
+
+               (:file "variables")
+               (:file "environment")
                )
   :depends-on (:esrap)
   )

@@ -45,7 +45,10 @@
                            "quote" intertoken_space
                            datum intertoken_space
                            ")"))
-  (:lambda (lst) (remove-if #'null lst))
+  (:lambda (data)
+    (if (= (length data) 4)
+        (quotation (cadddr data))
+        (quotation (caddr (cdddr data)))))
 )
 
 (esrap::defrule procedure_call
