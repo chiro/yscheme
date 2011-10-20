@@ -187,9 +187,9 @@
                       it
                       (progn (scm-eval begin (cons new-frame env))
                              (setf new-frame
-                                   (mapcar (lambda (val step)
-                                             (if step
-                                                 (scm-eval step (cons new-frame env))
+                                   (mapcar (lambda (val next)
+                                             (if next
+                                                 (scm-eval next (cons new-frame env))
                                                  val))
                                            new-frame))
                              (rec)))))
