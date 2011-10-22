@@ -1,0 +1,24 @@
+loadする順覚え書き
+
+
+variables.lisp
+
+util.lisp
+(onlisp.lisp)
+(func.lisp)
+(primitive.lisp)
+
+primitive/*
+  equiv.lisp
+  number.lisp
+  boolean.lisp
+  list.lisp
+  (symbol.lisp) ; kokokara madanai
+  (character.lisp)
+  (string.lisp)
+  (vector.lisp)
+  (blobs.lisp)
+
+env.lisp
+
+eval.lisp

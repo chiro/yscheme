@@ -1,35 +1,47 @@
 (in-package :yscheme)
 
 (defclass scm-object () ())
-
-(defclass scm-undefined (scm-object) ())
-
-(defvar +undefined+ (make-instance 'scm-undefined))
-
 (defclass scm-form (scm-object) ())
-
+(defclass scm-undefined (scm-object) ())
+(defvar +undefined+ (make-instance 'scm-undefined))
 
 
 (defclass self-evaluating (scm-form)
   ((val :accessor val :initarg :val)))
 
-(defclass scm-nil       (self-evaluating) ())
-(defclass scm-boolean   (self-evaluating) ())
-(defclass scm-string    (self-evaluating) ())           ; val = string
-(defclass scm-character (self-evaluating) ())           ; val = character
-(defclass scm-vector    (self-evaluating) ())           ; val = vector
+(defclass scm-number (self-evaluating)
+  ((ex :accessor ex :initarg :ex)))
 
+(defclass scm-complex  (scm-number)   ())
+(defclass scm-real     (scm-complex)  ())
+
+(defclass scm-finite   (scm-real)     ())
+(defclass scm-rational (scm-finite)   ())
+(defclass scm-integer  (scm-rational) ())
+
+(defclass scm-infinity (scm-real) ())
+(defclass scm-positive-infinity  (scm-infinity) ())
+(defclass scm-negative-infinity  (scm-infinity) ())
+(defclass scm-nan      (scm-real) ())
+
+(defclass scm-boolean (self-evaluating) ())             ; val = t | nil
 (defvar +true+ (make-instance 'scm-boolean :val t))
 (defvar +false+ (make-instance 'scm-boolean :val nil))
 
-
+(defclass scm-list (scm-form) ())
+(defclass scm-nil  (scm-list) ())
+(defclass scm-pair (scm-list)
+  ((val-car :accessor val-car :initarg :val-car)        ; scm-form
+   (val-cdr :accessor val-cdr :initarg :val-cdr)))      ; scm-form
 
 (defclass scm-symbol (scm-form)
   ((name :accessor name :initarg :name)))               ; string
 
-(defclass scm-pair (scm-form)
-  ((val-car :accessor val-car :initarg :val-car)        ; scm-form
-   (val-cdr :accessor val-cdr :initarg :val-cdr)))      ; scm-form
+(defclass scm-character (self-evaluating) ())           ; val = character
+
+(defclass scm-string    (self-evaluating) ())           ; val = string
+
+(defclass scm-vector    (self-evaluating) ())           ; val = vector
 
 
 (defclass definition (scm-form)

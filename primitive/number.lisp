@@ -2,34 +2,12 @@
 
 ;;; 6.2. Numbers
 
-
-(defclass scm-number (self-evaluating)
-  ((ex :accessor ex :initarg :ex)))
-
-;   (re :accessor re :initarg :re :documentation "real part")
-;   (im :accessor im :initarg :im :documentation "imaginary part")
-;   (nu :accessor nu :initarg :nu :documentation "numerator")
-;   (de :accessor de :initarg :de :documentation "denominator")
-
-(defclass scm-complex  (scm-number)   ())
-(defclass scm-real     (scm-complex)  ())
-
-(defclass scm-finite   (scm-real)     ())
-(defclass scm-rational (scm-finite)   ())
-(defclass scm-integer  (scm-rational) ())
-
-(defclass scm-infinity (scm-real) ())
-(defclass scm-positive-infinity  (scm-infinity) ())
-(defclass scm-negative-infinity  (scm-infinity) ())
-(defclass scm-nan      (scm-real) ())
+(in-package :yscheme)
 
 
-
-;;
 (defun radix-n-to-number (n num)
   (read-from-string (format nil "#~Ar~A" n num)))
 
-;; 処理系依存の予感
 (defun number-class-of (val)
   (cond ((integerp val)      'scm-integer)
         ((zerop (mod val 1)) 'scm-integer)
@@ -38,22 +16,23 @@
         ((realp val)         'scm-real)
         ((complexp val)      'scm-complex)))
 
-(defmacro define-numerical-operation (name &key op exactness)
-  (with-gensyms (parm v1 v2)
+(defmacro define-numerical-operation (name &key op ex (sel :first))
+  ;; sel :first :second :multi
+  (with-gensyms (parm exact v1 v2)
     `(progn
-       (defgeneric ,name (,parm))
-       (defmethod ,name (,parm)
+       (defgeneric ,name (&rest ,parm))
+       (defmethod ,name (&rest ,parm)
          (multiple-value-bind (,v1 ,v2)
              (apply ,op (mapcar (lambda (num) (val num)) ,parm))
-           (if ,v2
-               (values (new 'scm-number :val ,v1 :ex t)
-                       (new 'scm-number :val ,v2 :ex t))
-               (new 'scm-number
-                    :val ,v1
-                    :ex (aif ,exactness
-                             it
-                             (reduce (lambda (f s) (and f s))
-                                     (mapcar (lambda (num) (ex num)) ,parm))))))))))
+           (let ((,exact (aif ,ex
+                              it
+                              (reduce (lambda (f s) (and f s))
+                                      (mapcar (lambda (num) (ex num)) ,parm)))))
+             ,(case sel
+                    (:first `(new 'scm-number :val ,v1 :ex ,exact))
+                    (:second `(new 'scm-number :val ,v2 :ex ,exact))
+                    (:multi `(values (new 'scm-number :val ,v1 :ex ,exact)
+                                     (new 'scm-number :val ,v2 :ex ,exact))))))))))
 
 (defmethod initialize-instance :after ((num scm-number) &key)
   (let ((val (val num)))
@@ -111,7 +90,102 @@
 
 (define-numerical-operation scm-abs :op #'abs)
 
-(define-numerical-operation scm-floor/ :op #'floor)
-(define-numerical-operation scm-floor-quotient :op #'floor)
-(define-numerical-operation scm-floor-remainder :op #'floor)
+(define-numerical-operation scm-floor/ :op #'floor :sel :multi)
+(define-numerical-operation scm-floor-quotient :op #'floor :sel :first)
+(define-numerical-operation scm-floor-remainder :op #'floor :sel :second)
 
+(define-numerical-operation scm-ceiling/ :op #'ceiling :sel :multi)
+(define-numerical-operation scm-ceiling-quotient :op #'ceiling :sel :first)
+(define-numerical-operation scm-ceiling-remainder :op #'ceiling :sel :second)
+
+(define-numerical-operation scm-truncate/ :op #'truncate :sel :multi)
+(define-numerical-operation scm-truncate-quotient :op #'truncate :sel :first)
+(define-numerical-operation scm-truncate-remainder :op #'truncate :sel :second)
+
+(define-numerical-operation scm-round/ :op #'round :sel :multi)
+(define-numerical-operation scm-round-quotient :op #'round :sel :first)
+(define-numerical-operation scm-round-remainder :op #'round :sel :second)
+
+(defun euclidean (n1 n2)
+  (if (> n2 0) (ceiling n1 n2) (floor n1 n2)))
+
+(define-numerical-operation scm-euclidean/ :op #'euclidean :sel :multi)
+(define-numerical-operation scm-euclidean-quotient :op #'euclidean :sel :first)
+(define-numerical-operation scm-euclidean-remainder :op #'euclidean :sel :second)
+
+(define-numerical-operation scm-quotient :op #'truncate :sel :first)
+(define-numerical-operation scm-remainder :op #'truncate :sel :second)
+(define-numerical-operation scm-modulo :op #'mod)
+
+(define-numerical-operation scm-gcd :op #'gcd)
+(define-numerical-operation scm-lcm :op #'lcm)
+
+(define-numerical-operation scm-numerator :op #'numerator)
+(define-numerical-operation scm-denominator :op #'denominator)
+
+(define-numerical-operation scm-floor :op #'floor)
+(define-numerical-operation scm-ceiling :op #'ceiling)
+(define-numerical-operation scm-truncate :op #'truncate)
+(define-numerical-operation scm-round :op #'round)
+
+(defun scm-rationalize (x y)
+  (let ((x (rationalize x)))
+    (labels ((rec (p q)
+               (cond ((< y (abs (- (/ p q) x))) nil)
+                     ((zerop p) (list 0 1))
+                     ((= 1 q) (list p 1))
+                     (t (append (list (list p q)) (rec (1- p) q) (rec p (1- q)))))))
+      (apply #'/
+             (reduce (lambda (f s) (if (<= (apply #'+ f) (apply #'+ s)) f s))
+                     (rec (numerator x) (denominator x)))))))
+
+(define-numerical-operation scm-rationalize :op #'scm-rationalize)
+
+(define-numerical-operation scm-exp :op #'exp :ex nil)
+(define-numerical-operation scm-log :op #'log :ex nil)
+(define-numerical-operation scm-sin :op #'sin :ex nil)
+(define-numerical-operation scm-cos :op #'cos :ex nil)
+(define-numerical-operation scm-tan :op #'tan :ex nil)
+(define-numerical-operation scm-asin :op #'asin :ex nil)
+(define-numerical-operation scm-acos :op #'acos :ex nil)
+(define-numerical-operation scm-atan :op #'atan :ex nil)
+
+(define-numerical-operation scm-sqrt :op #'sqrt :ex nil)
+
+(define-numerical-operation scm-exact-integer-sqrt :op #'sqrt)
+
+(define-numerical-operation scm-expt :op #'expt)
+
+(define-numerical-operation scm-mkae-rectangular :op #')
+(define-numerical-operation scm-make-polar :op #')
+(define-numerical-operation scm-real-part :op #'realpart)
+(define-numerical-operation scm-imag-part :op #'imagpart)
+(define-numerical-operation scm-magnitude :op #'abs)
+(define-numerical-operation scm-angle
+    :op #'(lambda (z) (atan (iamgpartz z) (realpart z))))
+
+(define-numerical-operation scm-exact->inexact :op #'(lambda (z) z) :ex nil)
+(define-numerical-operation scm-inexact->exact :op #'(lambda (z) z) :ex t)
+
+
+;; 数値を表す文字列->数値 : 全射(単射でない) 基数に関する情報は落ちる
+;; 数値->数値を表す文字列 : 単射(全射でない)
+(defun number-to-string (num radix)
+  ())
+
+(defgeneric scm-number->string (obj1 &optional obj2))
+(defmethod scm-number->string ((num scm-number) &optional (radix scm-number))
+  (number-to-string num radix))
+
+
+(defun string-to-number (str radix)
+  ())
+
+(defun string-of-exact-number-p (str)
+  ())
+
+(defgeneric scm-number->string (obj1 &optional obj2))
+(defmethod scm-number->string ((str scm-string) &optional (radix scm-number))
+  (new 'scm-number
+       :val (string-to-number num radix)
+       :ex (string-of-exact-number num)))

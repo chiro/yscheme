@@ -1,7 +1,5 @@
 (in-package :yscheme)
 
-;;; environment
-
 (defparameter *primitive-bindings-table*
   `((boolean?      . ,#'boolean?)
     (pair?         . ,#'pair?)
@@ -38,16 +36,14 @@
 
 (defun null-environment (version)
   (declare (ignorable version));
-  (make-env))
+  nil)
 
 (defun scheme-report-environment (version)
   (declare (ignorable version));
-  (make-env
-   :table
-   (mapcar (lambda (entry)
-             (cons (string (car entry))
-                   (make-instance 'primitive-procedure :func (cdr entry))))
-           *primitive-bindings-table*)))
+  (list (mapcar (lambda (entry)
+                  (cons (string (car entry))
+                        (new 'primitive-procedure :func (cdr entry))))
+                *primitive-bindings-table*)))
 
 (defparameter *interaction-environment*
   (scheme-report-environment 7))

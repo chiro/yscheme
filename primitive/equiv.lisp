@@ -2,6 +2,8 @@
 
 ;;; 6.1. Equivlence predicates
 
+(in-package :yscheme)
+
 
 (defgeneric eqv? (obj1 obj2)
   (:documentation ""))
@@ -33,8 +35,6 @@
 (defmethod eqv? ((obj1 scm-string) (obj2 scm-string))
   (if (eql obj1 obj2) +true+ +false+))
 
-;; (defmethod eqv? ((obj1 scm-procedure) (obj2 scm-procedure))
-;;   (if (eql ob1 ob2) +true+ +false+))
 (defmethod eqv? ((obj1 procedure) (obj2 procedure))
   (if (eql obj1 obj2) +true+ +false+))
 
@@ -52,8 +52,9 @@
 
 (defmethod equal? (obj1 obj2) (eqv? obj1 obj2))
 
-(defmethod equal? ((obj1 scm-pair) (obj2 scm-pair))
-  ())
+;(defmethod equal? ((obj1 scm-pair) (obj2 scm-pair))
+;  )
 
-(defmethod equal? ((obj1 scm-vector) (obj2 scm-vector))
-  ())
+;(defmethod equal? ((obj1 scm-vector) (obj2 scm-vector))
+;  )
+
