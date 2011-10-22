@@ -5,6 +5,8 @@
                 (esrap::*
                  (esrap::and command_or_definition
                              intertoken_space)))
+  (:lambda (data)
+    (mapcar #'car (cadr data)))
 )
 
 (esrap::defrule command_or_definition
@@ -16,56 +18,81 @@
                ;;             "import" intertoken_space
                ;;             (esrap::+ import_set) intertoken_space
                ;;             ")")
-               (esrap::and intertoken_space
-                           "(" intertoken_space
-                           "begin" intertoken_space
-                           (esrap::+ command_or_definition)
-                           intertoken_space
-                           ")")
-               )
+               begin_cod)
+)
+
+(esrap::defrule begin_cod
+    (esrap::and intertoken_space
+                "(" intertoken_space
+                "begin" intertoken_space
+                (esrap::* command_or_definition)
+                intertoken_space
+                ")")
 )
 
 (esrap::defrule definition
-    (esrap::or (esrap::and intertoken_space
-                           "(" intertoken_space
-                           "define" intertoken_space
-                           scm_variable intertoken_space
-                           expression intertoken_space
-                           ")")
-               (esrap::and intertoken_space
-                           "(" intertoken_space
-                           "define" intertoken_space
-                           "(" intertoken_space
-                           scm_variable intertoken_space
-                           def_formals intertoken_space
-                           ")" intertoken_space
-                           body intertoken_space
-                           ")")
-               (esrap::and intertoken_space
-                           "(" intertoken_space
-                           "define-record-type"
-                           intertoken_space
-                           scm_variable intertoken_space
-                           constructor
-                           scm_variable intertoken_space
-                           (esrap::* field_spac) intertoken_space
-                           ")")
-               (esrap::and intertoken_space
-                           "(" intertoken_space
-                           "begin" intertoken_space
-                           (esrap::* definition)
-                           intertoken_space
-                           ")")
-               )
+    (esrap::or def_simple
+               def_func
+               def_record_type
+               begin_def)
+)
+
+(esrap::defrule def_simple
+    (esrap::and intertoken_space
+                "(" intertoken_space
+                "define" intertoken_space
+                scm_variable intertoken_space
+                expression intertoken_space
+                ")")
+  (:destructure (sf p1 s1 def s2 var s3 exp s4 p2)
+                (list :define var exp))
+)
+
+(esrap::defrule def_func
+    (esrap::and intertoken_space
+                "(" intertoken_space
+                "define" intertoken_space
+                "(" intertoken_space
+                scm_variable intertoken_space
+                def_formals intertoken_space
+                ")" intertoken_space
+                body intertoken_space
+                ")")
+  (:lambda (data) (remove-if #'null data))
+)
+
+(esrap::defrule def_record_type
+    (esrap::and intertoken_space
+                "(" intertoken_space
+                "define-record-type" intertoken_space
+                scm_variable intertoken_space
+                constructor
+                scm_variable intertoken_space
+                (esrap::* field_spec) intertoken_space
+                ")")
+)
+
+
+(esrap::defrule begin_def
+    (esrap::and intertoken_space
+                "(" intertoken_space
+                "begin" intertoken_space
+                (esrap::* definition)
+                intertoken_space
+                ")")
 )
 
 (esrap::defrule def_formals
-    (esrap::or (esrap::* (esrap::and scm_variable intertoken_space))
-               (esrap::and (esrap::* scm_variable)
+    (esrap::or (esrap::and (esrap::* (esrap::and scm_variable intertoken_space))
                            intertoken_space
                            "." intertoken_space
                            scm_variable)
+               (esrap::* (esrap::and scm_variable intertoken_space))
                )
+  (:lambda (data)
+    (if (and (= (length data) 5) (string= "." (caddr data)))
+        (remove-if #'null data)
+        (cons :formals (mapcar #'car data))))
 )
 
 (esrap::defrule constructor

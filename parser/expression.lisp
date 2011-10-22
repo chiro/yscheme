@@ -24,6 +24,7 @@
                  )
                 intertoken_space
                 )
+  (:lambda (data) (cadr data))
 )
 
 (esrap::defrule literal
@@ -96,6 +97,7 @@
     (esrap::and (esrap::* syntax_definition) intertoken_space
                 (esrap::* definition) intertoken_space
                 sequence)
+  (:lambda (data) (remove-if #'null data))
 )
 
 ;; left recursive!!
