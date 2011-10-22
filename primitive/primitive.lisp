@@ -1,4 +1,4 @@
-
+(in-package :yscheme)
 
 
 
@@ -90,50 +90,50 @@
 
 ;;; compare
 
-(defgeneric scm-< (num0 num1 &rest more-numbers))
-(defmethod scm-< (num0 num1 &rest more-numbers)
-  (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
-    (make-instance 'scm-boolean :val (apply #'< vals))))
+;; (defgeneric scm-< (num0 num1 &rest more-numbers))
+;; (defmethod scm-< (num0 num1 &rest more-numbers)
+;;   (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
+;;     (make-instance 'scm-boolean :val (apply #'< vals))))
 
-(defgeneric scm-> (num0 num1 &rest more-numbers))
-(defmethod scm-> (num0 num1 &rest more-numbers)
-  (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
-    (make-instance 'scm-boolean :val (apply #'> vals))))
+;; (defgeneric scm-> (num0 num1 &rest more-numbers))
+;; (defmethod scm-> (num0 num1 &rest more-numbers)
+;;   (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
+;;     (make-instance 'scm-boolean :val (apply #'> vals))))
 
-(defgeneric scm-<= (num0 num1 &rest more-numbers))
-(defmethod scm-<= (num0 num1 &rest more-numbers)
-  (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
-    (make-instance 'scm-boolean :val (apply #'<= vals))))
+;; (defgeneric scm-<= (num0 num1 &rest more-numbers))
+;; (defmethod scm-<= (num0 num1 &rest more-numbers)
+;;   (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
+;;     (make-instance 'scm-boolean :val (apply #'<= vals))))
 
-(defgeneric scm->= (num0 num1 &rest more-numbers))
-(defmethod scm->= (num0 num1 &rest more-numbers)
-  (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
-    (make-instance 'scm-boolean :val (apply #'>= vals))))
+;; (defgeneric scm->= (num0 num1 &rest more-numbers))
+;; (defmethod scm->= (num0 num1 &rest more-numbers)
+;;   (let ((vals (mapcar #'val (append (list num0 num1) more-numbers))))
+;;     (make-instance 'scm-boolean :val (apply #'>= vals))))
 
 
 
 ;;; arithmetic
 ;;; numberは細分化するので試用版
 
-(defgeneric scm-+ (&rest args))
-(defmethod scm-+ (&rest args)
-  (let ((vals (mapcar #'val args)))
-    (make-instance 'scm-number :val (apply #'+ vals))))
+;; (defgeneric scm-+ (&rest args))
+;; (defmethod scm-+ (&rest args)
+;;   (let ((vals (mapcar #'val args)))
+;;     (make-instance 'scm-number :val (apply #'+ vals))))
 
-(defgeneric scm-- (number &rest more-numbers))
-(defmethod scm-- (number &rest more-numbers)
-  (let ((vals (mapcar #'val (cons number more-numbers))))
-    (make-instance 'scm-number :val (apply #'- vals))))
+;; (defgeneric scm-- (number &rest more-numbers))
+;; (defmethod scm-- (number &rest more-numbers)
+;;   (let ((vals (mapcar #'val (cons number more-numbers))))
+;;     (make-instance 'scm-number :val (apply #'- vals))))
 
-(defgeneric scm-* (&rest args))
-(defmethod scm-* (&rest args)
-  (let ((vals (mapcar #'val args)))
-    (make-instance 'scm-number :val (apply #'* vals))))
+;; (defgeneric scm-* (&rest args))
+;; (defmethod scm-* (&rest args)
+;;   (let ((vals (mapcar #'val args)))
+;;     (make-instance 'scm-number :val (apply #'* vals))))
 
-(defgeneric scm-/ (number &rest more-numbers))
-(defmethod scm-/ (number &rest more-numbers)
-  (let ((vals (mapcar #'val (cons number more-numbers))))
-    (make-instance 'scm-number :val (apply #'/ vals))))
+;; (defgeneric scm-/ (number &rest more-numbers))
+;; (defmethod scm-/ (number &rest more-numbers)
+;;   (let ((vals (mapcar #'val (cons number more-numbers))))
+;;     (make-instance 'scm-number :val (apply #'/ vals))))
 
 
 
@@ -148,5 +148,3 @@
 (defgeneric scm-newline (obj))
 (defmethod scm-newline ((obj scm-object))
   (prin1 #\Newline))
-
-

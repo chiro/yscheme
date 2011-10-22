@@ -1,4 +1,4 @@
-
+(in-package :yscheme)
 
 ;; 6.1. Equivlence predicates
 
@@ -36,8 +36,8 @@
 
 (defgeneric eq? (obj1 obj2))
 
-(defmethod eq? ((obj1 ) (obj2 ))
-  (
+;; (defmethod eq? ((obj1 ) (obj2 ))
+;;   (
 
 
 

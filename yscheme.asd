@@ -5,6 +5,9 @@
   :serial t
   :components ((:file "package")
                (:file "util")
+               (:file "onlisp")
+
+               (:file "variables")
 
                (:module parser
                         :serial t
@@ -19,9 +22,11 @@
                                      (:file "program")
                                      (:file "parser")))
 
-               (:file "variables")
-;;               (:file "primitive")
-;;               (:file "env")
+               (:module primitive
+                        :serial t
+                        :components ((:file "equiv")
+                                     (:file "number")
+                                     (:file "primitive")))
                )
   :depends-on (:esrap)
   )

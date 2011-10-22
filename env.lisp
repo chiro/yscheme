@@ -1,3 +1,5 @@
+(in-package :yscheme)
+
 ;;; environment
 
 (defparameter *primitive-bindings-table*
@@ -52,6 +54,3 @@
 
 (defun interaction-environment ()
   *interaction-environment*)
-
-
-

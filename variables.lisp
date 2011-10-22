@@ -1,3 +1,5 @@
+(in-package :yscheme)
+
 (defclass scm-object () ())
 
 (defclass scm-undefined (scm-object) ())
@@ -11,15 +13,23 @@
 (defclass self-evaluating (scm-form)
   ((val :accessor val :initarg :val)))
 
+(defclass scm-nil       (self-evaluating) ())
+(defclass scm-boolean   (self-evaluating) ())
 (defclass scm-string    (self-evaluating) ())           ; val = string
 (defclass scm-character (self-evaluating) ())           ; val = character
 (defclass scm-vector    (self-evaluating) ())           ; val = vector
+
+(defvar +true+ (make-instance 'scm-boolean :val t))
+(defvar +false+ (make-instance 'scm-boolean :val nil))
 
 
 
 (defclass scm-symbol (scm-form)
   ((name :accessor name :initarg :name)))               ; string
 
+(defclass scm-pair (scm-form)
+  ((val-car :accessor val-car :initarg :val-car)        ; scm-form
+   (val-cdr :accessor val-cdr :initarg :val-cdr)))      ; scm-form
 
 
 (defclass definition (scm-form)
