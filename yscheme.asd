@@ -20,8 +20,8 @@
                                      (:file "parser")))
 
                (:file "variables")
-               (:file "primitive")
-               (:file "env")
+;;               (:file "primitive")
+;;               (:file "env")
                )
   :depends-on (:esrap)
   )
