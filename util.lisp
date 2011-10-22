@@ -16,13 +16,3 @@
 
 
 
-(defmacro with-gensyms ((&rest names) &body body)
-  `(let ,(loop for n in names collect `(,n (gensym)))
-     ,@body))
-
-(defmacro define-predicate
-    (name ((parm class)) otherwise &body body)
-  `(progn
-    (defgeneric ,name (obj))
-    (defmethod ,name ((obj scm-object)) ,otherwise)
-    (defmethod ,name ((,parm ,class)) ,@body)))

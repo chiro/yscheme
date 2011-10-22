@@ -1,3 +1,6 @@
+(in-package :yscheme)
+
+
 (defgeneric scm-eval (exp env)
   (:documentation ""))
 
@@ -43,6 +46,18 @@
 
 ;;; 4.1.3. Procedure calls
 
+(defgeneric scm-apply (proc args)
+  (:documentation "評価済みargsをprocに適用"))
+
+(defmethod scm-apply ((proc primitive-procedure) args)
+  (apply (func proc) args))
+
+(defmethod scm-apply ((proc compound-procedure) args)
+  (with-slots (parms body env) proc
+    (let ((new-frame (mapcar #'cons parms args)))
+      (scm-eval body (cons new-frame env)))))
+
+
 (defmethod scm-eval ((exp application) env)
   (with-slots (proc args) exp
     (scm-apply (scm-eval proc env)
@@ -77,6 +92,53 @@
 
 
 ;;; 4.2.1. Conditionals
+
+(defgeneric scm-clause-eval-p (clause env &key)
+  (:documentation "clauseのexpsを評価すべきか否か、すべきならその値を第2値で返す"))
+
+(defmethod scm-clause-eval-p ((clause clause) env &key)
+  (scm-eval (scm-eval (make-insance 'begin :exps (exps clause))
+                      (copy-env env))))
+
+(defmethod scm-clause-eval-p ((clause cond-clause) env &key)
+  (with-slots (test exps) clause
+    (aif (scm-truep (scm-eval test (copy-env env)))
+         (if (null exps)
+             it
+             (call-next-method)))))
+
+(defmethod scm-clause-eval-p ((clause cond-clause-with-proc) env &key)
+  (with-slots (test exps) clause
+    (aif (scm-truep (scm-eval test (copy-env env)))
+         (scm-apply (car exps) it))))
+         ;; => を読んだ段階で (car exps) は scm-procedure
+
+(defmethod scm-clause-eval-p ((clause cond-else-clause) env &key)
+  (call-next-method))
+
+(defmethod scm-clause-eval-p ((clause case-clause) env &key keyval)
+  (with-slots (datums exps) clause
+    (let ((datvals (mapcar (lambda (dat) (scm-eval dat (copy-env))) datums)))
+      (if (member keyval datvals :test #'eqv?)
+          (call-next-method)))))
+
+(defmethod scm-clause-eval-p ((clause case-clause-with-proc) env &key keyval)
+  (with-slots (datums exps) clause
+    (let ((datvals (mapcar (lambda (dat) (scm-eval dat (copy-env))) datums)))
+      (if (member keyval datvals :test #'eqv?)
+          (scm-apply (car exps) keyval)))))
+
+(defmethod scm-clause-eval-p ((clause case-else-clause) env &key keyval)
+  (call-next-method))
+
+(defmethod scm-clause-eval-p ((clause case-else-clause-with-proc) env &key keyval)
+  (scm-apply (car exps) keyval))
+
+(defmethod scm-clause-eval-p ((clause do-end-clause) env &key)
+  (with-slots (test exps) clause
+    (if (scm-truep (scm-eval test (copy-env env)))
+        (call-next-method))))
+
 
 (defmethod scm-eval ((exp cond-exp) env)
   (labels ((rec (clauses)

@@ -1,3 +1,6 @@
+(in-package :yscheme)
+
+
 (defun random-elt (choices)
   (elt choices (random (length choices))))
 
