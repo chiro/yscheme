@@ -18,9 +18,9 @@
                  lambda_expression
                  conditional
                  assignment
-                 ;;               derived_expression
-                 ;;               macro_use
-                 ;;               macro_block
+                 ;; derived_expression
+                 ;; macro_use
+                 ;; macro_block
                  )
                 intertoken_space
                 )
@@ -48,8 +48,8 @@
                            ")"))
   (:lambda (data)
     (if (= (length data) 4)
-        (quotation (cadddr data))
-        (quotation (caddr (cdddr data)))))
+        (make-instance 'quotation :qexp (cadddr data))
+        (make-instance 'quotation :qexp (caddr (cdddr data)))))
 )
 
 (esrap::defrule procedure_call

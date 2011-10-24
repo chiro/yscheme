@@ -6,9 +6,10 @@
                 (esrap::or "#t" "#f")
                 (esrap::& delimiter)
                 intertoken_space)
-  (:destructure (sp b dl)
-                (list :boolean b)))
-
+  (:destructure (sp b dl sp2)
+                (if (string= b "#t")
+                    +true+
+                    +false+)))
 
 ;; character
 (esrap::defrule yscheme::scm_character
@@ -19,7 +20,7 @@
                  )
                 (esrap:& delimiter)
                 intertoken_space)
-  (:lambda (sp) sp))
+  (:destructure (sp1 ch del sp2) ch))
 
 (esrap::defrule yscheme::character_name
     (esrap::and "null" "alarm" "backspace" "tab" "newline" "return" "escape" "space" "delete"))

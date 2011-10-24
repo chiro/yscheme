@@ -22,22 +22,36 @@
 (esrap:defrule yscheme::identifier
     (esrap::or syntactic_keyword
                identifier_aux)
-  (:lambda (data)
-    (if (listp data) data
-        (list :keyword data))))
+  (:lambda (data) data))
+    ;; (if (listp data) data
+    ;;     (list :keyword data))))
 
 
 (esrap:defrule yscheme::identifier_aux
     (esrap::and intertoken_space
-                (esrap::or (esrap::and initial (esrap::* subsequent))
-                           (esrap::and "|" (esrap::* symbol_element) "|")
+                (esrap::or normal_id ; (esrap::and initial (esrap::* subsequent))
+                           vertsand_id
                            peculiar_identifier)
                 (esrap::& delimiter)
                 intertoken_space)
-  (:lambda (x) (list :variable (reduce (lambda (x y) (concatenate 'string x y))
-                                       (mapcar #'string (flatten (cadr x)))
-                                       :initial-value "")))
+  (:lambda (data) (cadr data))
   )
+
+(esrap::defrule normal_id
+    (esrap::and initial (esrap::* subsequent))
+  (:lambda (data)
+    (let ((name (reduce (lambda (x y) (concatenate 'string x y))
+                        (mapcar #'string (flatten data))
+                        :initial-value "")))
+      (make-instance 'scm-symbol :name name))))
+
+(esrap::defrule vertsand_id
+    (esrap::and "|" (esrap::* symbol_element) "|")
+  (:lambda (data)
+    (let ((name (reduce (lambda (x y) (concatenate 'string x y))
+                        (mapcar #'string (flatten data))
+                        :initial-value "")))
+      (make-instance 'scm-symbol :name name))))
 
 (esrap::defrule yscheme::initial
     (esrap::or letter special_initial inline_hex_escape))
@@ -67,7 +81,6 @@
     (esrap::and bslash "x" hex_scalar_value ";")
   (:destructure (bs x hsv sc)
                 (code-char (parse-integer (cadr hsv) :radix 16)))
-;                (list :inline_hex_escape (cadr hsv)))
 )
 
 (esrap::defrule yscheme::hex_scalar_value
@@ -87,14 +100,15 @@
     (esrap::or initial explicit_sign "@"))
 
 (esrap::defrule yscheme::peculiar_identifier
-    (esrap::or explicit_sign
+    (esrap::or (esrap::and explicit_sign) ; make list
                (esrap::and explicit_sign sign_subsequent (esrap::* subsequent))
                (esrap::and explicit_sign "." dot_subsequent (esrap::* subsequent))
                (esrap::and "." non_digit (esrap::* subsequent)))
   (:lambda (data)
-    (if (not (listp data))
-        (list data)
-        data))
+    (let ((name (reduce (lambda (x y) (concatenate 'string x y))
+                        (mapcar #'string (flatten data))
+                        :initial-value "")))
+      (make-instance 'scm-symbol :name name)))
 )
 
 (esrap::defrule yscheme::syntactic_keyword

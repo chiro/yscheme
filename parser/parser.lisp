@@ -11,12 +11,12 @@
 (defun parse-from-file (filepath comp)
   (with-open-file (stream filepath)
     (let ((str (read-stream-to-string stream)))
-      (esrap::parse comp str))))
+      (esrap::parse comp str :junk-allowed t))))
 
 (defun parse-program-from-file (filepath)
   (with-open-file (stream filepath)
     (let ((str (read-stream-to-string stream)))
-      (parse-program (str)))))
+      (parse-program str))))
 
 (defun parse-program (str)
   (esrap::parse 'program str))
