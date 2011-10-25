@@ -14,16 +14,20 @@
 ;; character
 (esrap::defrule yscheme::scm_character
     (esrap::and intertoken_space
+                "#"
                 (esrap::or
                  (esrap::and bslash "x" hex_scalar_value)
-                 (esrap::and bslash (esrap::or character_name character))
+                 (esrap::and bslash character_name)
+                 (esrap::and bslash character)
                  )
                 (esrap:& delimiter)
                 intertoken_space)
-  (:destructure (sp1 ch del sp2) ch))
+  (:destructure (sp1 sharp ch del sp2)
+                (make-instance 'scm-character :val ch))
+)
 
 (esrap::defrule yscheme::character_name
-    (esrap::and "null" "alarm" "backspace" "tab" "newline" "return" "escape" "space" "delete"))
+    (esrap::or "null" "alarm" "backspace" "tab" "newline" "return" "escape" "space" "delete"))
 
 
 ;; string
@@ -41,7 +45,11 @@
                 "\""
                 intertoken_space)
   (:destructure (isp c1 str c2 isp2)
-                (list :string str)))
+                (make-instance 'scm-string :val
+                               (reduce (lambda (x y) (concatenate 'string x y))
+                                       (mapcar #'string str)
+                                       :initial-value "")))
+)
 
 (esrap::defrule yscheme::scm_string_element
     (esrap::or inline_hex_escape
