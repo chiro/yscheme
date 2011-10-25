@@ -58,7 +58,9 @@
                 operator intertoken_space
                 (esrap::* operand) intertoken_space
                 ")")
-  (:lambda (lst) (remove-if #'null lst))
+  (:destructure (s1 p1 s2 ope s3 opl s4 p2)
+                (make-instance 'application :proc ope :args opl))
+;  (:lambda (lst) (remove-if #'null lst))
 )
 
 (esrap::defrule operator
@@ -116,7 +118,10 @@
                 test
                 consequent
                 alternate intertoken_space
-                ")"))
+                ")")
+  (:destructure (s1 p1 s2 iff s3 tst cosq alt s4 p2)
+                (make-instance 'if-exp :pred tst :then cosq :else alt))
+)
 (esrap::defrule test
     expression)
 (esrap::defrule consequent
@@ -131,7 +136,9 @@
                 scm_variable
                 expression intertoken_space
                 ")")
-  (:lambda (asg)
-    (remove-if #'null asg))
+  (:destructure (s1 p1 s2 sets s3 var exp s4 p2)
+                (make-instance 'assignment :sym var :val exp))
+  ;; (:lambda (asg)
+  ;;   (remove-if #'null asg))
 )
 
