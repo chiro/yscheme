@@ -36,15 +36,15 @@
     (esrap::or "null" "alarm" "backspace" "tab" "newline" "return" "escape" "space" "delete")
   (:lambda (data)
     (case data
-      ("null" #\null)
+      ("null"      #\null)
       ("backspace" #\backspace)
-      ("tab" #\tab)
-      ("newline" #\newline)
-      ("return" #\return)
-      ("escape" #\escape)
-      ("space" #\space)
-      ("delete" #\delete)
-      ("alarm" "alarm")))
+      ("tab"       #\tab)
+      ("newline"   #\newline)
+      ("return"    #\return)
+      ("escape"    #\escape)
+      ("space"     #\space)
+      ("delete"    #\delete)
+      ("alarm"     #\bell)))
 )
 
 
@@ -71,9 +71,25 @@
 
 (esrap::defrule yscheme::scm_string_element
     (esrap::or inline_hex_escape
-               (esrap::and bslash itlws line_ending itlws)
-               (esrap::and bslash (esrap::or "a" "b" "t" "n" "r" "\"" bslash))
+               string_cont_nextline
+               escape_sequence
                (not-dq-or-bs-p character)))
+
+(esrap::defrule string_cont_nextline
+    (esrap::and bslash itlws line_ending itlws)
+  (:destructure (bs iw1 le iw2) le))
+
+(esrap::defrule escape_sequence
+    (esrap::and bslash (esrap::or "a" "b" "t" "n" "r" "\"" bslash))
+  (:destructure (bs es)
+                (case es
+                  ("a" #\bell)
+                  ("b" #\backspace)
+                  ("t" #\Tab)
+                  ("n" #\Newline)
+                  ("r" #\Return)
+                  ("\"" #\")
+                  (#\\ #\\))))
 
 ;; bytevector
 (esrap::defrule yscheme::scm_bytevector
