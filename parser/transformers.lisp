@@ -26,7 +26,7 @@
                 template intertoken_space
                 ")"))
 
-;; incomplete
+;; TODO incomplete
 (esrap::defrule pattern
     (esrap::or pattern_identifier
                underscore
@@ -49,6 +49,7 @@
                            scm_boolean
                            scm_number)))
 
+;; TODO : write ....
 (esrap::defrule template
     (esrap::or pattern_identifier
                ; ...

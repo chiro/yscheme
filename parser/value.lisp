@@ -1,6 +1,7 @@
 (in-package :yscheme)
 
 ;; boolean
+;; return scm-boolean
 (esrap::defrule yscheme::scm_boolean
     (esrap::and intertoken_space
                 (esrap::or "#t" "#f")
@@ -12,6 +13,7 @@
                     +false+)))
 
 ;; character
+;; return scm-character
 (esrap::defrule yscheme::scm_character
     (esrap::and intertoken_space
                 "#"
@@ -32,6 +34,7 @@
                 (code-char (parse-integer (cadr sv) :radix 16)))
 )
 
+;; spacial characters
 (esrap::defrule yscheme::character_name
     (esrap::or "null" "alarm" "backspace" "tab" "newline" "return" "escape" "space" "delete")
   (:lambda (data)
@@ -49,13 +52,14 @@
 
 
 ;; string
-(defun not-dq-p (char)
+(defun not-dq-p (char) ;; not double quote
   (not (eql #\" char)))
 
-(defun not-dq-or-bs-p (char)
+(defun not-dq-or-bs-p (char) ;; not double quote and not back slash
   (and (not-dq-p char)
        (not (eql #\\ char))))
 
+;; return scm-string
 (esrap::defrule yscheme::scm_string
     (esrap::and intertoken_space
                 "\""
@@ -91,14 +95,14 @@
                   ("\"" #\")
                   (#\\ #\\))))
 
-;; bytevector
-(esrap::defrule yscheme::scm_bytevector
-    (esrap::and "#u8(" intertoken_space
-                (esrap::* (esrap::and scm-byte intertoken_space)) ")"))
-
+;; bytevector TODO
 (defun byte-p (digs)
   (let ((dp (parse-integer (charl-to-str digs) :junk-allowed t)))
     (not (or (null dp) (< dp 0) (> dp 255)))))
+
+(esrap::defrule yscheme::scm_bytevector
+    (esrap::and "#u8(" intertoken_space
+                (esrap::* (esrap::and scm-byte intertoken_space)) ")"))
 
 (esrap::defrule yscheme::scm-byte
     (byte-p (esrap::+ digit))

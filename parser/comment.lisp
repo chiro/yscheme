@@ -7,7 +7,7 @@
   (not (eql #\Newline char)))
 
 ;; comment
-
+;; ";; this is a comment" -> (:comment ";; this is a comment")
 (esrap:defrule yscheme::comment
     (esrap::or oneline-comment
                nested-comment)

@@ -20,9 +20,9 @@
 (esrap:defrule ws
     (esrap::or itlws nl rt))
 
-(esrap:defrule nl (nl-p character))
-(esrap:defrule rt (rt-p character))
-(esrap:defrule itlws (esrap::or " " "	"))
+(esrap:defrule nl (nl-p character)) ;; newline
+(esrap:defrule rt (rt-p character)) ;; return
+(esrap:defrule itlws (esrap::or " " "	")) ;; interline white space
 (esrap:defrule line_ending (esrap::or nl rt))
 
-(esrap:defrule bslash (bsl-p character))
+(esrap:defrule bslash (bsl-p character)) ;; back slash

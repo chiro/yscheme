@@ -1,14 +1,5 @@
 (in-package :yscheme)
 
-(defmacro insert_space (&rest lst)
-  `(esrap::and ,@(flatten (insert-every 'intertoken_space
-                                       lst))))
-(defun insert-every (exps lst)
-  (if (null lst) nil
-      (cons exps
-            (cons (car lst)
-                  (insert-every exps (cdr lst))))))
-
 (esrap::defrule yscheme::expression
     (esrap::and intertoken_space
                 (esrap::or
@@ -133,6 +124,7 @@
 (esrap::defrule alternate
     (esrap::? expression))
 
+
 (esrap::defrule assignment
     (esrap::and intertoken_space
                 "(" intertoken_space
@@ -142,7 +134,5 @@
                 ")")
   (:destructure (s1 p1 s2 sets s3 var exp s4 p2)
                 (make-instance 'assignment :sym var :val exp))
-  ;; (:lambda (asg)
-  ;;   (remove-if #'null asg))
 )
 
