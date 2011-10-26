@@ -6,6 +6,8 @@
   :components ((:file "package")
                (:file "util")
 
+               (:file "variables")
+
                (:module parser
                         :serial t
                         :components ((:file "generic")
