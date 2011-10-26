@@ -58,7 +58,8 @@
                 ")" intertoken_space
                 body intertoken_space
                 ")")
-  (:lambda (data) (remove-if #'null data))
+  (:destructure (s1 p1 s2 def s3 p2 s4 var s5 fo s6 p3 s7 b s8 p4)
+                (make-instance 'function-definition :sym var :parms fo :body b))
 )
 
 (esrap::defrule def_record_type
@@ -92,7 +93,7 @@
   (:lambda (data)
     (if (and (= (length data) 5) (string= "." (caddr data)))
         (remove-if #'null data)
-        (cons :formals (mapcar #'car data))))
+        (mapcar #'car data)))
 )
 
 (esrap::defrule constructor

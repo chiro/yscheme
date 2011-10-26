@@ -5,7 +5,7 @@
 (esrap::defrule scm_number
     (esrap::and (esrap::or num2 num8 num10 num16)
                 (esrap::& delimiter))
-  (:destructure (num del) (list :number num))
+  (:destructure (num del) num)
   )
 
 ;; binary numbers
@@ -64,7 +64,7 @@
     (esrap::and prefix10 complex10)
   (:destructure (pre comp)
              (cond ((and pre comp) (list :num10 pre comp))
-                   (t (list :num10 comp))))
+                   (t comp)))
 )
 
 (esrap::defrule complex10
@@ -78,15 +78,19 @@
      (esrap::and real10 "-i")
      real10
      "+i"
-     "-i"))
+     "-i")
+  (:lambda (data)
+    data))
 
 (esrap::defrule real10
     (esrap::or (esrap::and sign ureal10)
                infinity)
   (:lambda (data)
-    (if (or (not (listp data)) (car data))
-        data
-        (cadr data)))
+    (if (listp data)
+        (if (string= (car data) "-")
+            (list :minus (cadr data))
+            (cadr data))
+        data))
 )
 
 
@@ -99,9 +103,10 @@
 (esrap::defrule uinteger10
     (esrap::and +digit10 (esrap:* "#"))
   (:destructure (digs shs)
-                (if (null shs)
-                    (list :integer digs)
-                    (list :integer digs shs))))
+                (make-instance 'scm-integer :val (parse-integer digs)))) ;; temporary
+                ;; (if (null shs)
+                ;;     (list :integer digs)
+                ;;     (list :integer digs shs))))
 
 (esrap::defrule prefix10
     (esrap::or (esrap::and radix10 exactness)
@@ -239,7 +244,12 @@
 ;; ==================================================
 
 (esrap:defrule infinity
-    (esrap::or "+inf.0" "-inf.0" "+nan.0"))
+    (esrap::or "+inf.0" "-inf.0" "+nan.0")
+  (:lambda (inf)
+    (case inf
+      ("+inf.0" (make-instance 'scm-positive-infinity))
+      ("-inf.0" (make-instance 'scm-negative-infinity))
+      ("+nan.0" (make-instance 'scm-nan)))))
 
 (esrap:defrule suffix
     (esrap::? (esrap::and exponent_marker sign +digit10))

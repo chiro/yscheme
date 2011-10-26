@@ -99,17 +99,21 @@
     (esrap::and (esrap::* syntax_definition) intertoken_space
                 (esrap::* definition) intertoken_space
                 sequence)
-  (:lambda (data) (remove-if #'null data))
+  (:destructure (sdef s1 def s2 sq)
+                sq) ;; TODO
+;;  (:lambda (data) (remove-if #'null data))
 )
 
 ;; left recursive!!
 (esrap::defrule sequence
-    (esrap::and (esrap::* command) intertoken_space))
+    (esrap::and (esrap::* command) intertoken_space)
+  (:destructure (clist sp) clist))
 
 
 (esrap::defrule command
     (esrap::and intertoken_space
-                expression))
+                expression)
+  (:destructure (s1 exp) exp))
 
 (esrap::defrule conditional
     (esrap::and intertoken_space
