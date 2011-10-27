@@ -9,6 +9,13 @@
 
 (defclass self-evaluating (scm-form)
   ((val :accessor val :initarg :val)))
+;; self-evaluating の val
+;; scm-number    : initialize-instance の際に val を string-to-number する
+;; scm-boolean   : 新たにインスタンスが生成されることはない(全て同一インスタンス)
+;; scm-symbol    : name は string
+;; scm-character : character (todo: #\alarm)
+;; scm-string    : string
+;; scm-vector    : vector
 
 (defclass scm-number (self-evaluating)
   ((ex :accessor ex :initarg :ex)))

@@ -19,5 +19,5 @@
                                      (:file "program")
                                      (:file "parser")))
                )
-  :depends-on (:esrap)
+  :depends-on (:esrap :cl-unicode)
   )

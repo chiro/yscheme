@@ -7,7 +7,7 @@
 
 (defgeneric symbol->string (obj))
 (defmethod symbol->string ((sym scm-symbol))
-  (name sym))
+  (new 'scm-string :val (name sym)))
 
 (defgeneric string->symbol (obj))
 (defmethod string->symbol ((str scm-string))

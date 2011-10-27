@@ -34,6 +34,8 @@
 
 (defmethod initialize-instance :after ((num scm-number) &key)
   (let ((val (val num)))
+    (when (stringp val)
+      (setf val (string->number val)))
     (change-class num (number-class-of val))))
 
 
@@ -171,8 +173,9 @@
 ;(defun number-to-string (num radix)
 ;  ())
 
-(defgeneric scm-number->string (obj1 &optional obj2))
-(defmethod scm-number->string ((num scm-number) &optional radix)
+(defgeneric number->string (obj1 &optional obj2))
+(defmethod number->string
+    ((num scm-number) &optional (radix (new 'scm-number :val 10 :ex t)))
   (number-to-string num radix))
 
 
@@ -182,8 +185,9 @@
 ;(defun string-of-exact-number-p (str)
 ;  ())
 
-(defgeneric scm-string->number (obj1 &optional obj2))
-(defmethod scm-string->number ((str scm-string) &optional radix)
+(defgeneric string->number (obj1 &optional obj2))
+(defmethod string->number
+    ((str scm-string) &optional (radix (new 'scm-number :val 10 :ex t)))
   (new 'scm-number
        :val (string-to-number str radix)
        :ex (string-of-exact-number str)))
