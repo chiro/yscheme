@@ -1,5 +1,6 @@
 (in-package :yscheme)
 
+
 (defclass scm-object () ())
 (defclass scm-form (scm-object) ())
 (defclass scm-undefined (scm-object) ())

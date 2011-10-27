@@ -7,17 +7,26 @@
   `(let ,(loop for n in names collect `(,n (gensym)))
      ,@body))
 
-(defmacro define-predicate (name ((parm class)) otherwise &body body)
-  `(progn
-    (defgeneric ,name (obj))
-    (defmethod ,name ((obj scm-object)) ,otherwise)
-    (defmethod ,name ((,parm ,class)) ,@body)))
-
 (defmacro new (class &rest initargs)
-  `(new ,class ,@initargs))
+  `(make-instance ,class ,@initargs))
+
+(defmacro define-predicate (name ((parm class)) otherwise &body body)
+  (with-gensyms (obj)
+    `(progn
+       (defgeneric ,name (,obj))
+       (defmethod ,name ((,obj scm-object)) ,otherwise)
+       (defmethod ,name ((,parm ,class)) ,@body))))
+
+(defmacro define-equiv (name ((parm1 parm2 class)) &key test)
+  (with-gensyms (obj1 obj2)
+    `(progn
+       (defgeneric ,name (,obj1 ,obj2))
+       (defmethod ,name ((,parm1 ,class) (,parm2 ,class))
+         (if ,test +true+ +false+)))))
 
 
 (define-predicate scm-truep ((obj scm-boolean)) obj (val obj))
+
 
 ; ?
 (define-predicate scm-dotted-list-p ((obj scm-pair)) nil

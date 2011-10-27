@@ -18,12 +18,12 @@
 
 (defmethod scm-eval ((fundef function-definition) env)
   (with-slots (sym parms body) fundef
-    (let ((proc (make-instance 'compound-procedure
-                               :parms parms
-                               :body (if (null (cdr body))
-                                         (car body)
-                                         (make-instance 'begin :exps body))
-                               :env env)))
+    (let ((proc (new 'compound-procedure
+                     :parms parms
+                     :body (if (null (cdr body))
+                               (car body)
+                               (new 'begin :exps body))
+                     :env env)))
       (setf env (cons (list (cons (name sym) proc)) env))
       proc)))
 
@@ -33,7 +33,7 @@
 
 (defmethod scm-eval ((sym scm-symbol) env)
   (with-slots (name) sym
-    (aif (assoc-env name (env-table env))
+    (aif (assoc-env name env)
          (cdr it)
          (warn "unbound variable ~A" name))))
 
@@ -85,7 +85,7 @@
 (defmethod scm-eval ((exp assignment) env)
   (with-slots (sym val) exp
     (with-slots (name) sym
-      (aif (assoc-env name (env-table env))
+      (aif (assoc-env name env)
            (setf (cdr it) (scm-eval val env))
            (warn "undefined variable ~A" name))
       val)))
@@ -97,34 +97,34 @@
   (:documentation "clauseのexpsを評価すべきか否か、すべきならその値を第2値で返す"))
 
 (defmethod scm-clause-eval-p ((clause clause) env &key)
-  (scm-eval (scm-eval (make-insance 'begin :exps (exps clause))
-                      (copy-env env))))
+  (scm-eval (new 'begin :exps (exps clause))
+            env))
 
 (defmethod scm-clause-eval-p ((clause cond-clause) env &key)
   (with-slots (test exps) clause
-    (aif (scm-truep (scm-eval test (copy-env env)))
+    (aif (scm-truep (scm-eval test env))
          (if (null exps)
              it
              (call-next-method)))))
 
 (defmethod scm-clause-eval-p ((clause cond-clause-with-proc) env &key)
   (with-slots (test exps) clause
-    (aif (scm-truep (scm-eval test (copy-env env)))
+    (aif (scm-truep (scm-eval test env))
          (scm-apply (car exps) it))))
-         ;; => を読んだ段階で (car exps) は scm-procedure
+;; => を読んだ段階で (car exps) は scm-procedure
 
 (defmethod scm-clause-eval-p ((clause cond-else-clause) env &key)
   (call-next-method))
 
 (defmethod scm-clause-eval-p ((clause case-clause) env &key keyval)
   (with-slots (datums exps) clause
-    (let ((datvals (mapcar (lambda (dat) (scm-eval dat (copy-env))) datums)))
+    (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
       (if (member keyval datvals :test #'eqv?)
           (call-next-method)))))
 
 (defmethod scm-clause-eval-p ((clause case-clause-with-proc) env &key keyval)
   (with-slots (datums exps) clause
-    (let ((datvals (mapcar (lambda (dat) (scm-eval dat (copy-env))) datums)))
+    (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
       (if (member keyval datvals :test #'eqv?)
           (scm-apply (car exps) keyval)))))
 
@@ -132,11 +132,11 @@
   (call-next-method))
 
 (defmethod scm-clause-eval-p ((clause case-else-clause-with-proc) env &key keyval)
-  (scm-apply (car exps) keyval))
+  (scm-apply (car (exps clause)) keyval))
 
 (defmethod scm-clause-eval-p ((clause do-end-clause) env &key)
   (with-slots (test exps) clause
-    (if (scm-truep (scm-eval test (copy-env env)))
+    (if (scm-truep (scm-eval test env))
         (call-next-method))))
 
 
@@ -144,42 +144,40 @@
   (labels ((rec (clauses)
              (if (null clauses)
                  +undefined+
-                 (aif (scm-clause-eval-p (car clause) env)
-                      it
-                      (rec (cdr clauses))))))
-    (rec (clauses cond-exp))))
+                 (or (scm-clause-eval-p (car clauses) env)
+                     (rec (cdr clauses))))))
+    (rec (clauses exp))))
 
 (defmethod scm-eval ((exp case-exp) env)
   (let ((keyval (scm-eval (key exp) env)))
     (labels ((rec (clauses)
                (if (null clauses)
                    +undefined+
-                   (aif (scm-clause-eval-p (car clause) env :keyval keyval)
-                        it
-                        (rec (cdr clauses))))))
-      (rec (clauses cond-exp)))))
+                   (or (scm-clause-eval-p (car clauses) env :keyval keyval)
+                       (rec (cdr clauses))))))
+      (rec (clauses exp)))))
 
 
 (defmethod scm-eval ((exp and-exp) env)
   (with-slots (exps) exp
     (cond ((null exps)
-           (make-instance 'scm-boolean :val t))
+           (new 'scm-boolean :val t))
           ((and (null (cdr exps)) (scm-truep (scm-eval (car exps) env)))
            (car exps))
           ((scm-truep (scm-eval (car exps) env))
-           (scm-eval (make-instance 'and-exp :exps (cdr exps))
+           (scm-eval (new 'and-exp :exps (cdr exps))
                      env))
           (t
-           (make-instance 'scm-boolean :val nil)))))
+           (new 'scm-boolean :val nil)))))
 
 (defmethod scm-eval ((exp or-exp) env)
   (with-slots (exps) exp
     (cond ((null exps)
-           (make-instance 'scm-boolean :val nil))
+           (new 'scm-boolean :val nil))
           ((scm-truep (scm-eval (car exps) env))
            (car exps))
           (t
-           (scm-eval (make-instance 'or-exp :exps (cdr exps))
+           (scm-eval (new 'or-exp :exps (cdr exps))
                      env)))))
 
 
@@ -190,7 +188,7 @@
     (let ((new-frame
            (mapcar (lambda (bind) (cons (sym bind) (scm-eval (init bind) env)))
                    binds)))
-      (scm-eval (make-instance 'begin :exps body)
+      (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
 
 (defmethod scm-eval ((exp let*-exp) env)
@@ -201,7 +199,7 @@
               (acons (name (sym bind))
                      (scm-eval (init bind) (cons new-frame env))
                      new-frame)))
-      (scm-eval (make-instance 'begin :exps body)
+      (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
 
 
@@ -213,7 +211,7 @@
       (dolist (bind binds)
         (setf (cdr (assoc (name (sym bind)) new-frame))
               (scm-eval (init bind) env)))
-      (scm-eval (make-instance 'begin :exps body)
+      (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
 
 (defmethod scm-eval ((exp letrec*-exp) env)
@@ -224,16 +222,15 @@
       (dolist (bind binds)
         (setf (cdr (assoc (name (sym bind)) new-frame))
               (scm-eval (init bind) (cons new-frame env))))
-      (scm-eval (make-instance 'begin :exps body)
+      (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
 
 
 ;;; 4.2.3. Sequencing
 
 (defmethod scm-eval ((exp begin) env)
-  (aif (last1 (mapcar (lambda (e) (scm-eval e env)) (exps exp)))
-       it
-       +undefined+))
+  (or (last1 (mapcar (lambda (e) (scm-eval e env)) (exps exp)))
+      +undefined+))
 
 
 ;;; 4.2.4. Iteration
@@ -243,29 +240,27 @@
     (let ((new-frame
            (mapcar (lambda (bind) (cons (sym bind) (scm-eval (init bind) env)))
                    binds))
-          (begin (make-instance 'begin :exps body)))
-      (labels ((rec ()
-                 (aif (scm-clause-eval-p end new-env)
-                      it
-                      (progn (scm-eval begin (cons new-frame env))
-                             (setf new-frame
-                                   (mapcar (lambda (val next)
-                                             (if next
-                                                 (scm-eval next (cons new-frame env))
-                                                 val))
-                                           new-frame))
-                             (rec)))))
-        (rec)))))
+          (begin (new 'begin :exps body)))
+      (labels ((rec (env)
+                 (or (scm-clause-eval-p end env)
+                     (progn (scm-eval begin env)
+                            (let ((new-frame
+                                   (mapcar (lambda (bind)
+                                             (cons (sym bind)
+                                                   (scm-eval (next bind) env)))
+                                           binds)))
+                              (rec (cons new-frame env)))))))
+        (rec (cons new-frame env))))))
 
 
 (defmethod scm-eval ((exp named-let-exp) env)
   (with-slots (sym binds body) exp
-    (let* ((proc (make-instance 'compound-procedure
-                                :parms (mapcar #'sym binds)
-                                :body (if (null (cdr body))
-                                          (car body)
-                                          (make-instance 'begin :exps body))
-                                :env env))
+    (let* ((proc (new 'compound-procedure
+                      :parms (mapcar #'sym binds)
+                      :body (if (null (cdr body))
+                                (car body)
+                                (new 'begin :exps body))
+                      :env env))
            (new-frame (list (cons (name sym) proc))))
       (setf (env proc) (cons new-frame env))
       (scm-apply proc

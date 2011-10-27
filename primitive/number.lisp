@@ -1,5 +1,3 @@
-(in-package :yscheme)
-
 ;;; 6.2. Numbers
 
 (in-package :yscheme)
@@ -24,10 +22,10 @@
        (defmethod ,name (&rest ,parm)
          (multiple-value-bind (,v1 ,v2)
              (apply ,op (mapcar (lambda (num) (val num)) ,parm))
-           (let ((,exact (aif ,ex
-                              it
-                              (reduce (lambda (f s) (and f s))
-                                      (mapcar (lambda (num) (ex num)) ,parm)))))
+           (declare (ignorable ,v1 ,v2))
+           (let ((,exact (or ,ex
+                             (reduce (lambda (f s) (and f s))
+                                     (mapcar (lambda (num) (ex num)) ,parm)))))
              ,(case sel
                     (:first `(new 'scm-number :val ,v1 :ex ,exact))
                     (:second `(new 'scm-number :val ,v2 :ex ,exact))
@@ -128,7 +126,7 @@
 (define-numerical-operation scm-truncate :op #'truncate)
 (define-numerical-operation scm-round :op #'round)
 
-(defun scm-rationalize (x y)
+(defun scm-rationalize0 (x y)
   (let ((x (rationalize x)))
     (labels ((rec (p q)
                (cond ((< y (abs (- (/ p q) x))) nil)
@@ -139,7 +137,7 @@
              (reduce (lambda (f s) (if (<= (apply #'+ f) (apply #'+ s)) f s))
                      (rec (numerator x) (denominator x)))))))
 
-(define-numerical-operation scm-rationalize :op #'scm-rationalize)
+(define-numerical-operation scm-rationalize :op #'scm-rationalize0)
 
 (define-numerical-operation scm-exp :op #'exp :ex nil)
 (define-numerical-operation scm-log :op #'log :ex nil)
@@ -156,13 +154,13 @@
 
 (define-numerical-operation scm-expt :op #'expt)
 
-(define-numerical-operation scm-mkae-rectangular :op #')
-(define-numerical-operation scm-make-polar :op #')
+;(define-numerical-operation scm-mkae-rectangular :op #')
+;(define-numerical-operation scm-make-polar :op #')
 (define-numerical-operation scm-real-part :op #'realpart)
 (define-numerical-operation scm-imag-part :op #'imagpart)
 (define-numerical-operation scm-magnitude :op #'abs)
 (define-numerical-operation scm-angle
-    :op #'(lambda (z) (atan (iamgpartz z) (realpart z))))
+    :op #'(lambda (z) (atan (imagpart z) (realpart z))))
 
 (define-numerical-operation scm-exact->inexact :op #'(lambda (z) z) :ex nil)
 (define-numerical-operation scm-inexact->exact :op #'(lambda (z) z) :ex t)
@@ -170,22 +168,22 @@
 
 ;; 数値を表す文字列->数値 : 全射(単射でない) 基数に関する情報は落ちる
 ;; 数値->数値を表す文字列 : 単射(全射でない)
-(defun number-to-string (num radix)
-  ())
+;(defun number-to-string (num radix)
+;  ())
 
 (defgeneric scm-number->string (obj1 &optional obj2))
-(defmethod scm-number->string ((num scm-number) &optional (radix scm-number))
+(defmethod scm-number->string ((num scm-number) &optional radix)
   (number-to-string num radix))
 
 
-(defun string-to-number (str radix)
-  ())
+;(defun string-to-number (str radix)
+;  ())
 
-(defun string-of-exact-number-p (str)
-  ())
+;(defun string-of-exact-number-p (str)
+;  ())
 
-(defgeneric scm-number->string (obj1 &optional obj2))
-(defmethod scm-number->string ((str scm-string) &optional (radix scm-number))
+(defgeneric scm-string->number (obj1 &optional obj2))
+(defmethod scm-string->number ((str scm-string) &optional radix)
   (new 'scm-number
-       :val (string-to-number num radix)
-       :ex (string-of-exact-number num)))
+       :val (string-to-number str radix)
+       :ex (string-of-exact-number str)))

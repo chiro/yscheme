@@ -17,12 +17,12 @@
 (defmethod scm-car ((obj scm-pair)) (val-cdr obj))
 
 (defgeneric set-car! (obj1 obj2))
-(defmethod set-car! ((pair scm-pair) (scm-object obj))
+(defmethod set-car! ((pair scm-pair) (obj scm-object))
   (setf (val-car pair) obj)
   obj)
 
 (defgeneric set-cdr! (obj1 obj2))
-(defmethod set-cdr! ((pair scm-pair) (scm-object obj))
+(defmethod set-cdr! ((pair scm-pair) (obj scm-object))
   (setf (val-cdr pair) obj)
   obj)
 
@@ -35,7 +35,7 @@
         (t +false+)))
 
 (defgeneric scm-make-list (obj1 &optional obj2))
-(defmethod scm-make-list ((k scm-integer) &optional (obj scm-object))
+(defmethod scm-make-list ((k scm-integer) &optional obj)
   (do ((i (val k) (1- i))
        (result (new 'scheme-nil)
                (new 'scm-pair :val-car obj :val-cdr result)))
@@ -89,36 +89,36 @@
        list)))
 
 
-(defgeneric memq (obj1 obj2))
-(defmethod memq ((obj scm-object) (list scm-list))
-  (member obj list (new 'primitive-procedure :func #'eq?)))
+(defgeneric scm-memq (obj1 obj2))
+(defmethod scm-memq ((obj scm-object) (list scm-list))
+  (scm-member obj list (new 'primitive-procedure :func #'eq?)))
 
-(defgeneric memv (obj1 obj2))
-(defmethod memq ((obj scm-object) (list scm-list))
-  (member obj list (new 'primitive-procedure :func #'eqv?)))
+(defgeneric scm-memv (obj1 obj2))
+(defmethod scm-memq ((obj scm-object) (list scm-list))
+  (scm-member obj list (new 'primitive-procedure :func #'eqv?)))
 
-(defgeneric member (obj1 obj2 &optional obj3))
-(defmethod member ((obj scm-object) (list scm-list)
+(defgeneric scm-member (obj1 obj2 &optional obj3))
+(defmethod scm-member ((obj scm-object) (list scm-list)
                    &optional (cmp (new 'primitive-procedure :func #'equal?)))
   (do ((list list (val-cdr list)))
-      ((or (scm-truep (scm-apply cmp (val-car list) obj))
+      ((or (scm-truep (scm-apply cmp (list (val-car list) obj)))
            (scm-truep (null? list)))
        (if (scm-truep (null? list))
            +false+
            list))))
 
 
-(defgeneric assq (obj1 obj2))
-(defmethod assq ((obj scm-object) (list scm-list))
-  (assoc obj list (new 'primitive-procedure :func #'eq?)))
+(defgeneric scm-assq (obj1 obj2))
+(defmethod scm-assq ((obj scm-object) (list scm-list))
+  (scm-assoc obj list (new 'primitive-procedure :func #'eq?)))
 
-(defgeneric assv (obj1 obj2))
-(defmethod assv ((obj scm-object) (list scm-list))
-  (assoc obj list (new 'primitive-procedure :func #'eqv?)))
+(defgeneric scm-assv (obj1 obj2))
+(defmethod scm-assv ((obj scm-object) (list scm-list))
+  (scm-assoc obj list (new 'primitive-procedure :func #'eqv?)))
 
-(defgeneric assoc (obj1 obj2))
-(defmethod assoc ((obj scm-object) (list scm-list)
-                  &optional (cmp (new 'primitive-procedure :func #'equal?)))
+(defgeneric scm-assoc (obj1 obj2 &optional obj3))
+(defmethod scm-assoc ((obj scm-object) (list scm-list)
+                      &optional (cmp (new 'primitive-procedure :func #'equal?)))
   (do ((list list (val-cdr list))
        (key-and-value nil (val-car list)))
       ((or (scm-truep (null? list))
@@ -129,8 +129,8 @@
            key-and-value)))
 
 
-(defgeneric list-copy (obj))
-(defmethod list-copy ((obj scm-list))
+(defgeneric scm-list-copy (obj))
+(defmethod scm-list-copy ((list scm-list))
   (do ((list list (val-cdr list))
        (new-list
         (new 'scm-nil)

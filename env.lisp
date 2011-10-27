@@ -1,5 +1,6 @@
 (in-package :yscheme)
 
+
 (defparameter *primitive-bindings-table*
   `((boolean?      . ,#'boolean?)
     (pair?         . ,#'pair?)
