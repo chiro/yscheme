@@ -38,6 +38,8 @@
       (setf val (string->number val)))
     (change-class num (number-class-of val))))
 
+;; 入出力時の表現として #e, #i がなければ、小数点の有無で正確性を区別する
+;; 1 : exact, 1.0 : inexaxt
 
 
 (define-predicate number? ((obj scm-number)) +false+ +true+)

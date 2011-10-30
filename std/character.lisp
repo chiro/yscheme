@@ -8,36 +8,36 @@
 (define-predicate char? ((obj scm-character)) +false+ +true+)
 
 
-(define-equiv char=? ((obj1 obj2 scm-character))
-  :test (char= (val char1) (val char2)))
+(define-compare char=? (objs)
+  :test (reduce (lambda (f s) (and f (char= (val f) (val s)) s)) objs)
 
-(define-equiv char<? ((obj1 obj2 scm-character))
-  :test (char< (val char1) (val char2)))
+(define-compare char<? (objs)
+  :test (reduce (lambda (f s) (and f (char< (val f) (val s)) s)) objs)
 
-(define-equiv char>? ((obj1 obj2 scm-character))
-  :test (char> (val char1) (val char2)))
+(define-compare char>? (objs)
+  :test (reduce (lambda (f s) (and f (char> (val f) (val s)) s)) objs))
 
-(define-equiv char<=? ((obj1 obj2 scm-character))
-  :test (char<= (val char1) (val char2)))
+(define-compare char<=? (objs)
+  :test (reduce (lambda (f s) (and f (char<= (val f) (val s)) s)) objs))
 
-(define-equiv char>=? ((obj1 obj2 scm-character))
-  :test (char>= (val char1) (val char2)))
+(define-compare char>=? (objs)
+  :test (reduce (lambda (f s) (and f (char>= (val f) (val s)) s)) objs))
 
 
-(define-equiv char-ci=? ((obj1 obj2 scm-character))
-  :test (char-equal (val char1) (val char2)))
+(define-compare char-ci=? (objs)
+  :test (reduce (lambda (f s) (and f (char-equal (val f) (val s)) s)) objs))
 
-(define-equiv char-ci<? ((obj1 obj2 scm-character))
-  :test (char-lessp (val char1) (val char2)))
+(define-compare char-ci<? (objs)
+  :test (reduce (lambda (f s) (and f (char-lessp (val f) (val s)) s)) objs))
 
-(define-equiv char-ci>? ((obj1 obj2 scm-character))
-  :test (char-greaterp (val char1) (val char2)))
+(define-compare char-ci>? (objs)
+  :test (reduce (lambda (f s) (and f (char-greaterp (val f) (val s)) s)) objs))
 
-(define-equiv char-ci<=? ((obj1 obj2 scm-character))
-  :test (char-not-greaterp (val char1) (val char2)))
+(define-compare char-ci<=? (objs)
+  :test (reduce (lambda (f s) (and f (char-not-greaterp (val f) (val s)) s)) objs))
 
-(define-equiv char-ci>=? ((obj1 obj2 scm-character))
-  :test (char-not-lessp (val char1) (val char2)))
+(define-compare char-ci>=? (objs)
+  :test (reduce (lambda (f s) (and f (char-not-lessp (val f) (val s)) s)) objs))
 
 
 (defgeneric character-alphabetic? (obj))

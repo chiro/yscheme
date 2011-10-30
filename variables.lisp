@@ -45,11 +45,10 @@
 (defclass scm-symbol (scm-form)
   ((name :accessor name :initarg :name)))               ; string
 
-(defclass scm-character (self-evaluating) ())           ; val = character
-
-(defclass scm-string    (self-evaluating) ())           ; val = string
-
-(defclass scm-vector    (self-evaluating) ())           ; val = vector
+(defclass scm-character  (self-evaluating) ())          ; val = character
+(defclass scm-string     (self-evaluating) ())          ; val = string
+(defclass scm-vector     (self-evaluating) ())          ; val = vector
+(defclass scm-bytevector (self-evaluating) ())          ; val = vector
 
 
 (defclass definition (scm-form)
