@@ -50,6 +50,10 @@
 (defclass scm-vector     (self-evaluating) ())          ; val = vector
 (defclass scm-bytevector (self-evaluating) ())          ; val = vector
 
+(defclass promiss (scm-form)
+  ((done :accessor done :initarg :done)
+   (proc :accessor proc :initarg :proc)))
+
 
 (defclass definition (scm-form)
   ((sym :accessor sym :initarg :sym)))                  ; scm-symbol
@@ -61,13 +65,68 @@
   ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
    (body :accessor body :initarg :body)))               ; list of scm-form
 
+
 ;(defclass syntax-definition (definition)
 ;  ())
 
-;(defclass record-type-definition (definition)
-;  ())
+
+(defclass record-type (scm-form)
+  ((type :accessor type :initarg :type)                 ; scm-symbol
+   (val :accessor val :initarg :val)))                  ; alist
+
+(defclass record-type-const (scm-form)
+  ((sym :accessor sym :initarg :sym)                    ; scm-symbol
+   (parms :accessor parms :initarg :parms)))            ; list of scm-symbol
+
+(defclass record-type-field (scm-form)
+  ((sym :accessor sym :initarg :sym)                    ; scm-symbol
+   (access :accessor access :initarg :access)           ; scm-symbol
+   (modify :accessor modify :initarg :modify))          ; scm-symbol
+
+(defclass record-type-definition (definition)
+  ((type :accessor type :initarg :type)                 ; scm-symbol
+   (const :accessor const :initarg :const)              ; record-type-const
+   (pred :accessor pred :initarg :pred)                 ; scm-symbol
+   (fields :accessor fields :initarg :fields)))         ; record-type-field
 
 
+(defclass rename-form (scm-form)
+  ((from :accessor from :initarg :from)                 ; scm-symbol
+   (to :accessor to :initarg :to)))                     ; scm-symbol
+
+(defclass only-form (scm-form)
+  ((mod :accessor mod :initarg :mod)
+   (syms :accessor syms :initarg :syms)))
+
+(defclass except-form (scm-form)
+  ((mod :accessor mod :initarg :mod)
+   (syms :accessor syms :initarg :syms)))
+
+(defclass prefix-form (scm-form)
+  ((mod :accessor mod :initarg :mod)
+   (pref :accessor pref :initarg :pref)))
+
+(defclass export-form (scm-form)
+  ((syms :accessor syms :initarg :syms)                 ; list of scm-symbol
+   (rename :accessor rename :initarg :rename)))
+
+(defclass inport-form (scm-form)
+  ((mods :accessor mods :initarg :mods)
+   (only :accessor only :initarg :only)                 ;
+   (except :accessor except :initarg :except)           ;
+   (prefix ::accessor prefix :initarg :prefix)          ;
+   (begin :accessor begin :initarg :begin)              ; begin
+   (rename :accessor rename :initarg :rename)))
+
+;(defclass incld (scm-form)
+
+(defclass module-form (scm-form)
+  ((syms :accessor syms :initarg :syms)                 ; list of scm-symbol
+   (exprt :accessor exprt :initarg :exprt)              ; export-form
+   (inprt :accessor inprt :initarg :inprt)              ; inport-form
+   (incld :accessor incld :initarg :incld)              ; include
+   (incld-ci :accessor incld-ci :initarg :incld-ci)     ; include-ci
+   (condex :accessor condex :initarg :condex)))         ; cond-expand
 
 
 ;;; 4.1.1. Variable references
@@ -108,7 +167,7 @@
    (else :accessor else :initarg :else)))
 
 
-;;; 4.1.6. Assignments
+;;; 4.1.6. Assignments (set!)
 
 (defclass assignment (scm-form)
   ((sym :accessor sym :initarg :sym)
@@ -189,3 +248,28 @@
 
 (defclass named-let-exp (let-exp)
   ((sym :accessor sym :initarg :sym)))
+
+
+;;; 4.2.5. Delayed evaluation
+
+(defclass delay (scm-form)
+  ((expr :accessor expr :initexp :exp)))
+
+(defclass lazy (scm-form)
+  ((expr :accessor expr :initexp :exp)))
+
+(defclass force (scm-form)
+  ((promise :accessor promise :initarg :promise)))
+
+
+;;; 4.2.6. Dynamic Bindings
+
+(defclass parameterize (scm-form)
+  ((parms :accessor parms :initarg :parms)
+   (body :accessor body :initarg :body)))
+
+
+;;; 4.2.7. Exception Handling
+
+;(defclass guard (scm-form)
+;  ((

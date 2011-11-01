@@ -10,32 +10,19 @@
 
 
 
-(defmethod scm-eval ((vardef variable-definition) env)
-  (with-slots (sym val) vardef
-    (let ((val (scm-eval val env)))
-      (setf env (cons (list (cons (name sym) val)) env))
-      val)))
+;(defmethod scm-eval ((syndef syntax-definition))
+;  ())
 
-(defmethod scm-eval ((fundef function-definition) env)
-  (with-slots (sym parms body) fundef
-    (let ((proc (new 'compound-procedure
-                     :parms parms
-                     :body (if (null (cdr body))
-                               (car body)
-                               (new 'begin :exps body))
-                     :env env)))
-      (setf env (cons (list (cons (name sym) proc)) env))
-      proc)))
+
 
 
 
 ;;; 4.1.1. Variable references
 
 (defmethod scm-eval ((sym scm-symbol) env)
-  (with-slots (name) sym
-    (aif (assoc-env name env)
-         (cdr it)
-         (warn "unbound variable ~A" name))))
+  (aif (assoc-env sym env)
+       (cdr it)
+       (warn "unbound variable ~A" (name sym))))
 
 
 ;;; 4.1.2. Literal expressions
@@ -72,11 +59,10 @@
 
 (defmethod scm-eval ((exp assignment) env)
   (with-slots (sym val) exp
-    (with-slots (name) sym
-      (aif (assoc-env name env)
-           (setf (cdr it) (scm-eval val env))
-           (warn "undefined variable ~A" name))
-      val)))
+    (aif (assoc-env sym env)
+         (setf (cdr it) (scm-eval val env))
+         (warn "undefined variable ~A" (name sym)))
+    val))
 
 
 ;;; 4.2.1. Conditionals
@@ -258,6 +244,18 @@
 
 ;;; 4.2.5. Delayed evaluation
 
+(defmethod scm-eval ((exp delay) env)
+  (new 'promise :done t :proc (expr exp)))
+
+(defmethod scm-eval ((exp delay) env)
+  (new 'promise :done nil :proc (expr exp)))
+
+(defmethod scm-eval ((exp force) env)
+  (with-slots (done proc) (promise force)
+    (when (not done)
+      (scm-eval proc env)
+      (setf done nil))
+    proc))
 
 
 ;;; 4.2.6. Dynamic Bindings

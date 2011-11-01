@@ -29,8 +29,9 @@
            (i 0 (+1 i)))
           ((scm-truep (null? args)))
         (push (val-car args) (elt arglists i))))
-    (dolist (arglist arglists (nreverse ret-list))
-      (push (scm-apply proc arglist) ret-list))))
+    (apply #'scm-list
+           (dolist (arglist arglists (nreverse ret-list))
+             (push (scm-apply proc arglist) ret-list)))))
 
 
 (defgeneric scm-string-map (obj1 &rest objs))
@@ -49,5 +50,33 @@
                    vecs)))
 
 
-;(defgeneric scm-for-each (obj1 &rest objs))
-;(defmethod scm-for-each ((proc procedure) &rest lists)
+(defgeneric scm-for-each (obj1 &rest objs))
+(defmethod scm-for-each ((proc procedure) &rest lists)
+  (let ((arglists
+         (make-list (val (scm-length (car lists)))
+                    :initial-element nil))
+        (ret-list nil))
+    (dolist (list lists)
+      (do ((args list (val-cdr args))
+           (i 0 (+1 i)))
+          ((scm-truep (null? args)))
+        (push (val-car args) (elt arglists i))))
+    (dolist (arglist arglists (nreverse ret-list))
+      (push (scm-apply proc arglist) ret-list))
+    +undefined+))
+
+
+(defgeneric scm-string-for-each (obj1 &rest objs))
+(defmethod scm-string-for-each ((proc procedure) &rest strs)
+  (apply #'map 'string
+         (lambda (c) (val (scm-apply proc (new 'scm-character :val c))))
+         strs)
+  +undefined+)
+
+
+(defgeneric scm-string-for-each (obj1 &rest objs))
+(defmethod scm-string-for-each ((proc procedure) &rest vecs)
+  (apply #'map 'vector
+         (lambda (o) (scm-apply proc o))
+         vecs)
+  +undefined+)
