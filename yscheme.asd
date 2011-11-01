@@ -4,9 +4,12 @@
 (defsystem :yscheme
   :serial t
   :components ((:file "package")
-               (:file "util")
-
                (:file "variables")
+               (:file "util")
+               (:file "func")
+               (:file "onlisp")
+
+
 
                (:module parser
                         :serial t
@@ -20,6 +23,23 @@
                                      (:file "expression")
                                      (:file "program")
                                      (:file "parser")))
+
+               (:file "primitive")
+               (:module std
+                        :serial t
+                        :components ((:file "equiv")
+                                      (:file "number")
+                                      (:file "boolean")
+                                      (:file "list")
+                                      ;; (:file "symbol")
+                                      ;; (:file "character")
+                                      ;; (:file "string")
+                                      ;; (:file "vector")
+                                      ;; (:file "blobs")
+                                     ))
+
+               (:file "env")
+               (:file "eval")
                )
   :depends-on (:esrap :cl-unicode)
   )
