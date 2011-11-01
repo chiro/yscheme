@@ -52,7 +52,7 @@
 (defmethod scm-length ((list scm-list))
   (do ((i 0 (1+ i))
        (list list (val-cdr list)))
-      ((scm-truep (null? list)) i)))
+      ((scm-truep (null? list)) (new 7scm-number :val i :ex t))))
 
 (defgeneric scm-append (obj1 obj2))
 (defmethod scm-append ((obj1 scm-list) (obj2 scm-list));

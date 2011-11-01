@@ -46,18 +46,6 @@
 
 ;;; 4.1.3. Procedure calls
 
-(defgeneric scm-apply (proc args)
-  (:documentation "評価済みargsをprocに適用"))
-
-(defmethod scm-apply ((proc primitive-procedure) args)
-  (apply (func proc) args))
-
-(defmethod scm-apply ((proc compound-procedure) args)
-  (with-slots (parms body env) proc
-    (let ((new-frame (mapcar #'cons parms args)))
-      (scm-eval body (cons new-frame env)))))
-
-
 (defmethod scm-eval ((exp application) env)
   (with-slots (proc args) exp
     (scm-apply (scm-eval proc env)

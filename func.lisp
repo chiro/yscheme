@@ -17,11 +17,11 @@
        (defmethod ,name ((,obj scm-object)) ,otherwise)
        (defmethod ,name ((,parm ,class)) ,@body))))
 
-(defmacro define-equiv (name ((parm1 parm2 class)) &key test)
-  (with-gensyms (obj1 obj2)
+(defmacro define-compare (name (parms) &key test)
+  (with-gensyms (objs)
     `(progn
-       (defgeneric ,name (,obj1 ,obj2))
-       (defmethod ,name ((,parm1 ,class) (,parm2 ,class))
+       (defgeneric ,name (&rest ,objs))
+       (defmethod ,name (&rest ,parms)
          (if ,test +true+ +false+)))))
 
 
