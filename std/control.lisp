@@ -38,7 +38,8 @@
 (defmethod scm-string-map ((proc procedure) &rest strs)
   (new 'scm-string
        :val (apply #'map 'string
-                   (lambda (c) (val (scm-apply proc (new 'scm-character :val c))))
+                   (lambda (c)
+                     (val (scm-apply proc (list (new 'scm-character :val c)))))
                    strs)))
 
 
@@ -46,7 +47,7 @@
 (defmethod scm-string-map ((proc procedure) &rest vecs)
   (new 'scm-vector
        :val (apply #'map 'vector
-                   (lambda (o) (scm-apply proc o))
+                   (lambda (o) (scm-apply proc (list o)))
                    vecs)))
 
 
@@ -69,7 +70,7 @@
 (defgeneric scm-string-for-each (obj1 &rest objs))
 (defmethod scm-string-for-each ((proc procedure) &rest strs)
   (apply #'map 'string
-         (lambda (c) (val (scm-apply proc (new 'scm-character :val c))))
+         (lambda (c) (val (scm-apply proc (list (new 'scm-character :val c)))))
          strs)
   +undefined+)
 
@@ -77,6 +78,22 @@
 (defgeneric scm-string-for-each (obj1 &rest objs))
 (defmethod scm-string-for-each ((proc procedure) &rest vecs)
   (apply #'map 'vector
-         (lambda (o) (scm-apply proc o))
+         (lambda (o) (scm-apply proc (list o)))
          vecs)
   +undefined+)
+
+
+;; call-with-current-continuation
+
+
+
+
+(defgeneric scm-values (&rest objs))
+(defmethod scm-values (&rest objs)
+  objs)
+
+
+(defgeneric scm-call-with-values (obj1 obj2))
+(defmethod scm-call-with-values ((produc procedure) (consum procedure))
+  (scm-apply consum (scm-apply produc nil)))
+
