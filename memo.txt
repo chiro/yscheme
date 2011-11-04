@@ -6,19 +6,24 @@ variables.lisp
 util.lisp
 (onlisp.lisp)
 (func.lisp)
-(primitive.lisp)
 
-primitive/*
+std/*
   equiv.lisp
   number.lisp
   boolean.lisp
   list.lisp
-  (symbol.lisp) ; kokokara madanai
-  (character.lisp)
-  (string.lisp)
-  (vector.lisp)
-  (blobs.lisp)
+  symbol.lisp
+  character.lisp
+  string.lisp
+  vector.lisp
+  bytevector.lisp
+  control.lisp
 
 env.lisp
 
 eval.lisp
+strc/*
+  def.lisp
+  recdef.lisp
+  (syndef.lisp)
+  (module.lisp)

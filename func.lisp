@@ -39,6 +39,6 @@
 
 (defun assoc-env (sym env)
   (if env
-      (aif (assoc (name sym) (car env) :key #'string=)
+      (aif (assoc (name sym) (car env) :test #'string=)
            it
            (assoc-env sym (cdr env)))))

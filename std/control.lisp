@@ -29,15 +29,17 @@
            (i 0 (+1 i)))
           ((scm-truep (null? args)))
         (push (val-car args) (elt arglists i))))
-    (dolist (arglist arglists (nreverse ret-list))
-      (push (scm-apply proc arglist) ret-list))))
+    (apply #'scm-list
+           (dolist (arglist arglists (nreverse ret-list))
+             (push (scm-apply proc arglist) ret-list)))))
 
 
 (defgeneric scm-string-map (obj1 &rest objs))
 (defmethod scm-string-map ((proc procedure) &rest strs)
   (new 'scm-string
        :val (apply #'map 'string
-                   (lambda (c) (val (scm-apply proc (new 'scm-character :val c))))
+                   (lambda (c)
+                     (val (scm-apply proc (list (new 'scm-character :val c)))))
                    strs)))
 
 
@@ -45,9 +47,53 @@
 (defmethod scm-string-map ((proc procedure) &rest vecs)
   (new 'scm-vector
        :val (apply #'map 'vector
-                   (lambda (o) (scm-apply proc o))
+                   (lambda (o) (scm-apply proc (list o)))
                    vecs)))
 
 
-;(defgeneric scm-for-each (obj1 &rest objs))
-;(defmethod scm-for-each ((proc procedure) &rest lists)
+(defgeneric scm-for-each (obj1 &rest objs))
+(defmethod scm-for-each ((proc procedure) &rest lists)
+  (let ((arglists
+         (make-list (val (scm-length (car lists)))
+                    :initial-element nil))
+        (ret-list nil))
+    (dolist (list lists)
+      (do ((args list (val-cdr args))
+           (i 0 (+1 i)))
+          ((scm-truep (null? args)))
+        (push (val-car args) (elt arglists i))))
+    (dolist (arglist arglists (nreverse ret-list))
+      (push (scm-apply proc arglist) ret-list))
+    +undefined+))
+
+
+(defgeneric scm-string-for-each (obj1 &rest objs))
+(defmethod scm-string-for-each ((proc procedure) &rest strs)
+  (apply #'map 'string
+         (lambda (c) (val (scm-apply proc (list (new 'scm-character :val c)))))
+         strs)
+  +undefined+)
+
+
+(defgeneric scm-string-for-each (obj1 &rest objs))
+(defmethod scm-string-for-each ((proc procedure) &rest vecs)
+  (apply #'map 'vector
+         (lambda (o) (scm-apply proc (list o)))
+         vecs)
+  +undefined+)
+
+
+;; call-with-current-continuation
+
+
+
+
+(defgeneric scm-values (&rest objs))
+(defmethod scm-values (&rest objs)
+  objs)
+
+
+(defgeneric scm-call-with-values (obj1 obj2))
+(defmethod scm-call-with-values ((produc procedure) (consum procedure))
+  (scm-apply consum (scm-apply produc nil)))
+
