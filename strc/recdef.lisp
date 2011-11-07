@@ -31,12 +31,12 @@
 
 
 (defmethod scm-eval ((recdef record-type-definition) env)
-  (with-slots (type const pred fields) recdef
+  (with-slots (rec-type const pred fields) recdef
     (let (diff)
       (with-slots (sym parms) const
-        (push (cons (name sym) (make-record-type-constructor type parms))
+        (push (cons (name sym) (make-record-type-constructor rec-type parms))
               diff)
-        (push (make-record-type-predicate type)
+        (push (make-record-type-predicate rec-type)
               diff))
       (dolist (field fields)
         (with-slots (sym access modify) field

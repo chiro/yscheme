@@ -72,7 +72,7 @@
 ;; 5.4 Record-type definitions
 
 (defclass record-type (scm-object)
-  ((type :accessor type :initarg :type)                 ; scm-symbol
+  ((rec-type :accessor rec-type :initarg :rec-type)     ; scm-symbol
    (val :accessor val :initarg :val)))                  ; alist
 
 (defclass record-type-const (scm-form)
@@ -82,10 +82,10 @@
 (defclass record-type-field (scm-form)
   ((sym :accessor sym :initarg :sym)                    ; scm-symbol
    (access :accessor access :initarg :access)           ; scm-symbol
-   (Modify :accessor modify :initarg :modify))          ; scm-symbol
+   (Modify :accessor modify :initarg :modify)))         ; scm-symbol
 
 (defclass record-type-definition (definition)
-  ((type :accessor type :initarg :type)                 ; scm-symbol
+  ((rec-type :accessor rec-type :initarg :rec-type)     ; scm-symbol
    (const :accessor const :initarg :const)              ; record-type-const
    (pred :accessor pred :initarg :pred)                 ; scm-symbol
    (fields :accessor fields :initarg :fields)))         ; record-type-field
@@ -96,7 +96,7 @@
   ((from :accessor from :initarg :from)                 ; scm-symbol
    (to :accessor to :initarg :to)))                     ; scm-symbol
 
-(defclass scm-import-set (scm-form))
+(defclass scm-import-set (scm-form) ())
 
 (defclass import-only (scm-import-set)
   ((im-set :accessor im-set :initarg :im-set)
@@ -113,7 +113,7 @@
 (defclass import-rename (scm-import-set rename-pair)
   ((im-set :accessor im-set :initarg :im-set)))
 
-(defclass cond-expand-clause (clause))
+(defclass cond-expand-clause (clause) ())
 
 
 (defclass module-export (scm-form)
@@ -233,11 +233,11 @@
 (defclass or-exp (scm-form)
   ((exps :accessor exps :initarg :exps)))
 
-(defclass or-exp (scm-form)
+(defclass when-exp (scm-form)
   ((test :accessor test :initarg :test)
    (exps :accessor exps :initarg :exps)))
 
-(defclass or-exp (scm-form)
+(defclass unless-exp (scm-form)
   ((test :accessor test :initarg :test)
    (exps :accessor exps :initarg :exps)))
 
@@ -292,17 +292,17 @@
 
 ;;; 4.2.5. Delayed evaluation
 
-(defclass promiss (scm-form)
+(defclass scm-promise (scm-form)
   ((done :accessor done :initarg :done)
    (proc :accessor proc :initarg :proc)))
 
-(defclass delay (scm-form)
-  ((expr :accessor expr :initexp :exp)))
+(defclass scm-delay (scm-form)
+  ((expr :accessor expr :initarg :exp)))
 
-(defclass lazy (scm-form)
-  ((expr :accessor expr :initexp :exp)))
+(defclass scm-lazy (scm-form)
+  ((expr :accessor expr :initarg :exp)))
 
-(defclass force (scm-form)
+(defclass scm-force (scm-form)
   ((promise :accessor promise :initarg :promise)))
 
 

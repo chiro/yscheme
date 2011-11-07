@@ -82,15 +82,15 @@
   :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
 
 
-(defgeneric string-upcase (obj))
-(defmethod string-upcase ((str scm-string))
+(defgeneric scm-string-upcase (obj))
+(defmethod scm-string-upcase ((str scm-string))
   (new 'scm-string
        :val (concatenate 'string
                          (mapcar #'cl-unicode:uppercase-mapping
                                  (concatenate 'list (val strs))))))
 
-(defgeneric string-downcase (obj))
-(defmethod string-downcase ((obj scm-string))
+(defgeneric scm-string-downcase (obj))
+(defmethod scm-string-downcase ((obj scm-string))
   (new 'scm-string
        :val (concatenate 'string
                          (mapcar #'cl-unicode:lowercase-mapping

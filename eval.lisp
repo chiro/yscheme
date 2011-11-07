@@ -11,7 +11,7 @@
 
 
 (defmethod scm-eval ((obj list) env) ; multiple-values
-  (scm-eval (car list) env))
+  (scm-eval (car obj) env))
 
 
 ;;; 4.1.1. Variable references
@@ -160,7 +160,7 @@
 (defmethod scm-eval ((exp unless-exp) env)
   (with-slots (test exps) exp
     (if (scm-truep (scm-eval test env))
-        +undefined
+        +undefined+
         (scm-eval (new 'begin :exps exps) env))))
 
 
@@ -216,8 +216,8 @@
         (setf new-frame
               (append new-frame
                       (mapcar (lambda (sym val) (cons sym val))
-                              (syms bind)
-                              (scm-eval (init bind) env)))))
+                              (syms mvbind)
+                              (scm-eval (init mvbind) env)))))
       (scm-eval (new 'begin :exps body) (cons new-frame env)))))
 
 (defmethod scm-eval ((exp let*-values-exp) env)
@@ -227,8 +227,8 @@
         (setf new-frame
               (append new-frame
                       (mapcar (lambda (sym val) (cons sym val))
-                              (syms bind)
-                              (scm-eval (init bind) (cons new-frame env))))))
+                              (syms mvbind)
+                              (scm-eval (init mvbind) (cons new-frame env))))))
       (scm-eval (new 'begin :exps body) (cons new-frame env)))))
 
 
@@ -281,19 +281,19 @@
 
 ;;; 4.2.5. Delayed evaluation
 
-(defmethod scm-eval ((exp promise) env)
+(defmethod scm-eval ((exp scm-promise) env)
   exp)
 
-(defmethod scm-eval ((exp delay) env)
-  (new 'promise
+(defmethod scm-eval ((exp scm-delay) env)
+  (new 'scm-promise
        :done nil
-       :proc (new 'promise :done t :proc (expr exp)))
+       :proc (new 'scm-promise :done t :proc (expr exp))))
 
-(defmethod scm-eval ((exp lazy) env)
-  (new 'promise :done nil :proc (expr exp)))
+(defmethod scm-eval ((exp scm-lazy) env)
+  (new 'scm-promise :done nil :proc (expr exp)))
 
-(defmethod scm-eval ((exp force) env)
-  (with-slots (done proc) (promise force)
+(defmethod scm-eval ((exp scm-force) env)
+  (with-slots (done proc) (promise exp)
     (when (not done)
       (scm-eval proc env)
       (setf done nil))

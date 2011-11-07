@@ -25,8 +25,8 @@
     (>             . ,#'scm->)
     (<=            . ,#'scm-<=)
     (>=            . ,#'scm->=)
-    (display       . ,#'scm-display)
-    (newline       . ,#'scm-newline)
+    ;;(display       . ,#'scm-display)
+    ;;(newline       . ,#'scm-newline)
     ;;(null-environment          . ,#'null-environment)
     ;;(scheme-report-environment . ,#'scheme-report-environment)
 

@@ -26,7 +26,7 @@
         (ret-list nil))
     (dolist (list lists)
       (do ((args list (val-cdr args))
-           (i 0 (+1 i)))
+           (i 0 (1+ i)))
           ((scm-truep (null? args)))
         (push (val-car args) (elt arglists i))))
     (apply #'scm-list
@@ -59,7 +59,7 @@
         (ret-list nil))
     (dolist (list lists)
       (do ((args list (val-cdr args))
-           (i 0 (+1 i)))
+           (i 0 (1+ i)))
           ((scm-truep (null? args)))
         (push (val-car args) (elt arglists i))))
     (dolist (arglist arglists (nreverse ret-list))

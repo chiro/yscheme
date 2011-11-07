@@ -3,16 +3,16 @@
 (in-package :yscheme)
 
 
-(defvar +whitespace+ '(#\Space #\Newline))
+(defvar +whitespace+ (list #\Space #\Newline))
 
 (define-predicate char? ((obj scm-character)) +false+ +true+)
 
 
 (define-compare char=? (objs)
-  :test (reduce (lambda (f s) (and f (char= (val f) (val s)) s)) objs)
+  :test (reduce (lambda (f s) (and f (char= (val f) (val s)) s)) objs))
 
 (define-compare char<? (objs)
-  :test (reduce (lambda (f s) (and f (char< (val f) (val s)) s)) objs)
+  :test (reduce (lambda (f s) (and f (char< (val f) (val s)) s)) objs))
 
 (define-compare char>? (objs)
   :test (reduce (lambda (f s) (and f (char> (val f) (val s)) s)) objs))
@@ -65,7 +65,7 @@
       +true+ +false+))
 
 (defgeneric char->integer (obj))
-(defgeneric char->integer ((char scm-character))
+(defmethod char->integer ((char scm-character))
   (new 'scm-number
        :val (char-code (val char)) :ex t))
 
@@ -74,17 +74,18 @@
   (new 'scm-charater
        :val (code-char (val scm-number))))
 
-(defgeneric char-upcase (obj))
-(defmethod char-upcase ((char scm-character))
+(defgeneric scm-char-upcase (obj))
+(defmethod scm-char-upcase ((char scm-character))
   (new 'scm-character
        :val (cl-unicode:uppercase-mapping (val char))))
 
-(defgeneric char-downcase (obj))
-(defmethod char-downcase ((char scm-character))
+(defgeneric scm-char-downcase (obj))
+(defmethod scm-char-downcase ((char scm-character))
   (new 'scm-character
        :val (cl-unicode:lowercase-mapping (val char) 0)))
 
-(defgeneric char-foldcase (obj))
-(defmethod char-foldcase ((char scm-character))
+(defgeneric scm-char-foldcase (obj))
+(defmethod scm-char-foldcase ((char scm-character))
   (cond ((scm-truep (character-upper-case? char)) (char-upcase char))
         ((scm-truep (character-lower-case? char)) (char-downcase char))))
+

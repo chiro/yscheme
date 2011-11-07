@@ -24,18 +24,26 @@
                                      (:file "program")
                                      (:file "parser")))
 
-               (:file "primitive")
                (:module std
                         :serial t
                         :components ((:file "equiv")
-                                      (:file "number")
-                                      (:file "boolean")
-                                      (:file "list")
-                                      ;; (:file "symbol")
-                                      ;; (:file "character")
-                                      ;; (:file "string")
-                                      ;; (:file "vector")
-                                      ;; (:file "blobs")
+                                     (:file "number")
+                                     (:file "boolean")
+                                     (:file "list")
+                                     (:file "symbol")
+                                     (:file "character")
+                                     (:file "string")
+                                     (:file "vector")
+                                     (:file "bytevector")
+                                     (:file "control")
+                                     ))
+
+               (:module strc
+                        :serial t
+                        :components ((:file "def")
+                                     ;; (:file "syndef")
+                                     ;; (:file "recdef")
+                                     ;; (:file "module")
                                      ))
 
                (:file "env")
