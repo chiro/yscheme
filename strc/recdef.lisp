@@ -43,4 +43,4 @@
           (push (cons (name access) (make-record-accessor sym)) diff)
           (when modify
             (push (cons (name modify) (make-record-modifier sym)) diff))))
-      (push diff env))))
+      (push diff (cdr (last env))))))

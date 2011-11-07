@@ -14,7 +14,8 @@
 
 (defmethod scm-apply ((proc compound-procedure) args)
   (with-slots (parms body env) proc
-    (let ((new-frame (mapcar #'cons parms args)))
+    (let ((new-frame
+           (mapcar (lambda (p v) (cons (name p) v)) parms args)))
       (scm-eval body (cons new-frame env)))))
 
 

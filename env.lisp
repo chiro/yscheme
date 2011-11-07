@@ -17,6 +17,7 @@
     (list          . ,#'scm-list)
     (append        . ,#'scm-append)
     (reverse       . ,#'scm-reverse)
+    (=            . ,#'scm-=)
     (+             . ,#'scm-+)
     (-             . ,#'scm--)
     (*             . ,#'scm-*)

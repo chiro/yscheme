@@ -14,7 +14,8 @@
   (with-gensyms (obj)
     `(progn
        (defgeneric ,name (,obj))
-       (defmethod ,name ((,obj scm-object)) ,otherwise)
+       (defmethod ,name ((,parm scm-object))
+         (declare (ignorable ,parm)) ,otherwise)
        (defmethod ,name ((,parm ,class)) ,@body))))
 
 (defmacro define-compare (name (parms) &key test)
@@ -36,7 +37,12 @@
 
 
 ;; env : ((("a" . 10) ("b" . 100)) (("c" . 1000) ("a" . 200)))
+;; env は後ろの方のフレームから先に読まれることに
 
 (defun assoc-env (sym env)
-  (or (assoc (name sym) (car env) :test #'string=)
-      (assoc-env sym (cdr env))))
+  (let ((env (reverse env)))
+    (or (assoc (name sym) (car env) :test #'string=)
+        (assoc-env sym (cdr env)))))
+
+(defun assoc-frame (sym frame)
+  (assoc (name sym) frame :test #'string=))

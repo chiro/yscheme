@@ -169,7 +169,8 @@
 (defmethod scm-eval ((exp let-exp) env)
   (with-slots (binds body) exp
     (let ((new-frame
-           (mapcar (lambda (bind) (cons (sym bind) (scm-eval (init bind) env)))
+           (mapcar (lambda (bind)
+                     (cons (name (sym bind)) (scm-eval (init bind) env)))
                    binds)))
       (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
@@ -189,10 +190,11 @@
 (defmethod scm-eval ((exp letrec-exp) env)
   (with-slots (binds body) exp
     (let ((new-frame
-           (mapcar (lambda (bind) (cons (sym bind) +undefined+))
+           (mapcar (lambda (bind)
+                     (cons (name (sym bind)) +undefined+))
                    binds)))
       (dolist (bind binds)
-        (setf (cdr (assoc (name (sym bind)) new-frame))
+        (setf (cdr (assoc-frame (sym bind) new-frame))
               (scm-eval (init bind) env)))
       (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
@@ -200,10 +202,11 @@
 (defmethod scm-eval ((exp letrec*-exp) env)
   (with-slots (binds body) exp
     (let ((new-frame
-           (mapcar (lambda (bind) (cons (sym bind) +undefined+))
+           (mapcar (lambda (bind)
+                     (cons (name (sym bind)) +undefined+))
                    binds)))
       (dolist (bind binds)
-        (setf (cdr (assoc (name (sym bind)) new-frame))
+        (setf (cdr (assoc-frame (sym bind) new-frame))
               (scm-eval (init bind) (cons new-frame env))))
       (scm-eval (new 'begin :exps body)
                 (cons new-frame env)))))
@@ -215,7 +218,7 @@
       (dolist (mvbind binds)
         (setf new-frame
               (append new-frame
-                      (mapcar (lambda (sym val) (cons sym val))
+                      (mapcar (lambda (sym val) (cons (name sym) val))
                               (syms mvbind)
                               (scm-eval (init mvbind) env)))))
       (scm-eval (new 'begin :exps body) (cons new-frame env)))))
@@ -226,7 +229,7 @@
       (dolist (mvbind binds)
         (setf new-frame
               (append new-frame
-                      (mapcar (lambda (sym val) (cons sym val))
+                      (mapcar (lambda (sym val) (cons (name sym) val))
                               (syms mvbind)
                               (scm-eval (init mvbind) (cons new-frame env))))))
       (scm-eval (new 'begin :exps body) (cons new-frame env)))))
@@ -249,7 +252,8 @@
 (defmethod scm-eval ((exp do-exp) env)
   (with-slots (binds end body) exp
     (let ((new-frame
-           (mapcar (lambda (bind) (cons (sym bind) (scm-eval (init bind) env)))
+           (mapcar (lambda (bind)
+                     (cons (name (sym bind)) (scm-eval (init bind) env)))
                    binds))
           (begin (new 'begin :exps body)))
       (labels ((rec (env)
@@ -257,7 +261,7 @@
                      (progn (scm-eval begin env)
                             (let ((new-frame
                                    (mapcar (lambda (bind)
-                                             (cons (sym bind)
+                                             (cons (name (sym bind))
                                                    (scm-eval (next bind) env)))
                                            binds)))
                               (rec (cons new-frame env)))))))

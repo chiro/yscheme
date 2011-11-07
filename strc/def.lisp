@@ -10,7 +10,7 @@
 (defmethod scm-eval ((vardef variable-definition) env)
   (with-slots (sym val) vardef
     (let ((val (scm-eval val env)))
-      (push (list (cons (name sym) val)) env)
+      (push (list (cons (name sym) val)) (cdr (last env)))
       val)))
 
 (defmethod scm-eval ((fundef function-definition) env)
@@ -21,6 +21,6 @@
                                (car body)
                                (new 'begin :exps body))
                      :env env)))
-      (push (list (cons (name sym) proc)) env)
+      (push (list (cons (name sym) proc)) (cdr (last env)))
       proc)))
 
