@@ -3,7 +3,7 @@
 (in-package :yscheme)
 
 
-(define-predicate string? ((obj scm-string)) +false +true+)
+(define-predicate string? ((obj scm-string)) +false+ +true+)
 
 
 (defgeneric scm-make-string (obj1 &optional obj2))

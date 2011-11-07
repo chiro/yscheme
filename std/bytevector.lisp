@@ -10,7 +10,7 @@
 (defmethod scm-make-bytevector
     ((k scm-integer) &optional (byte (new 'scm-number :val 0 :ex t)))
   (new 'scm-bytevecter
-       :val (make-array (val k) :element-type 'byte :initial-element byte)))
+       :val (make-array (val k) :element-type 'vector :initial-element byte)))
 
 (defgeneric scm-bytevector-length (obj))
 (defmethod scm-bytevector-length ((bytevec scm-bytevector))
@@ -23,7 +23,7 @@
 (defgeneric scm-bytevector-u8-set! (obj1 obj2 obj3))
 (defmethod scm-bytevector-u8-set!
     ((bytevec scm-bytevector) (k scm-integer) (byte scm-integer))
-  (setf (svref (val bytevec) (val k)) obj))
+  (setf (svref (val bytevec) (val k)) byte))
 
 (defgeneric scm-bytevector-copy (obj))
 (defmethod scm-bytevector-copy ((bytevec scm-bytevector))
@@ -38,7 +38,7 @@
 (defmethod scm-bytevector-copy-partial
     ((bytevec scm-bytevector) (start scm-integer) (end scm-integer))
   (new 'scm-bytevector
-       :val (subseq (val scm-bytevector) (val start) (val end))))
+       :val (subseq (val bytevec) (val start) (val end))))
 
 (defgeneric scm-bytevector-copy-partial! (obj1 obj2 obj3 obj4 obj5))
 (defmethod scm-bytevector-copy-partial!
@@ -46,4 +46,3 @@
      (at scm-integer))
   (dotimes (i (length (val from)))
     (setf (svref (val to) (+ i (val at))) (svref (val from) i))))
-
