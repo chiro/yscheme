@@ -10,11 +10,8 @@
 
 
 
-;(defmethod scm-eval ((syndef syntax-definition))
-;  ())
-
-
-
+(defmethod scm-eval ((obj list) env) ; multiple-values
+  (scm-eval (car list) env))
 
 
 ;;; 4.1.1. Variable references
@@ -84,7 +81,7 @@
 (defmethod scm-clause-eval-p ((clause cond-clause-with-proc) env &key)
   (with-slots (test exps) clause
     (aif (scm-truep (scm-eval test env))
-         (scm-apply (car exps) it))))
+         (scm-apply (car exps) (list it)))))
 ;; => を読んだ段階で (car exps) は scm-procedure
 
 (defmethod scm-clause-eval-p ((clause cond-else-clause) env &key)
@@ -100,13 +97,13 @@
   (with-slots (datums exps) clause
     (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
       (if (member keyval datvals :test #'eqv?)
-          (scm-apply (car exps) keyval)))))
+          (scm-apply (car exps) (list keyval))))))
 
 (defmethod scm-clause-eval-p ((clause case-else-clause) env &key keyval)
   (call-next-method))
 
 (defmethod scm-clause-eval-p ((clause case-else-clause-with-proc) env &key keyval)
-  (scm-apply (car (exps clause)) keyval))
+  (scm-apply (car (exps clause)) (list keyval)))
 
 (defmethod scm-clause-eval-p ((clause do-end-clause) env &key)
   (with-slots (test exps) clause
@@ -154,6 +151,18 @@
            (scm-eval (new 'or-exp :exps (cdr exps))
                      env)))))
 
+(defmethod scm-eval ((exp when-exp) env)
+  (with-slots (test exps) exp
+    (if (scm-truep (scm-eval test env))
+        (scm-eval (new 'begin :exps exps) env)
+        +undefined+)))
+
+(defmethod scm-eval ((exp unless-exp) env)
+  (with-slots (test exps) exp
+    (if (scm-truep (scm-eval test env))
+        +undefined
+        (scm-eval (new 'begin :exps exps) env))))
+
 
 ;;; 4.2.2. Binding constructs
 
@@ -200,6 +209,34 @@
                 (cons new-frame env)))))
 
 
+(defmethod scm-eval ((exp let-values-exp) env)
+  (with-slots (binds body) exp
+    (let (new-frame)
+      (dolist (mvbind binds)
+        (setf new-frame
+              (append new-frame
+                      (mapcar (lambda (sym val) (cons sym val))
+                              (syms bind)
+                              (scm-eval (init bind) env)))))
+      (scm-eval (new 'begin :exps body) (cons new-frame env)))))
+
+(defmethod scm-eval ((exp let*-values-exp) env)
+  (with-slots (binds body) exp
+    (let (new-frame)
+      (dolist (mvbind binds)
+        (setf new-frame
+              (append new-frame
+                      (mapcar (lambda (sym val) (cons sym val))
+                              (syms bind)
+                              (scm-eval (init bind) (cons new-frame env))))))
+      (scm-eval (new 'begin :exps body) (cons new-frame env)))))
+
+
+
+
+
+
+
 ;;; 4.2.3. Sequencing
 
 (defmethod scm-eval ((exp begin) env)
@@ -244,10 +281,15 @@
 
 ;;; 4.2.5. Delayed evaluation
 
-(defmethod scm-eval ((exp delay) env)
-  (new 'promise :done t :proc (expr exp)))
+(defmethod scm-eval ((exp promise) env)
+  exp)
 
 (defmethod scm-eval ((exp delay) env)
+  (new 'promise
+       :done nil
+       :proc (new 'promise :done t :proc (expr exp)))
+
+(defmethod scm-eval ((exp lazy) env)
   (new 'promise :done nil :proc (expr exp)))
 
 (defmethod scm-eval ((exp force) env)

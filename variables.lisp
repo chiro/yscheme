@@ -50,10 +50,9 @@
 (defclass scm-vector     (self-evaluating) ())          ; val = vector
 (defclass scm-bytevector (self-evaluating) ())          ; val = vector
 
-(defclass promiss (scm-form)
-  ((done :accessor done :initarg :done)
-   (proc :accessor proc :initarg :proc)))
 
+
+;; 5.2 Definitions
 
 (defclass definition (scm-form)
   ((sym :accessor sym :initarg :sym)))                  ; scm-symbol
@@ -65,12 +64,14 @@
   ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
    (body :accessor body :initarg :body)))               ; list of scm-form
 
+;; 5.3 Syntax definitions
 
 ;(defclass syntax-definition (definition)
 ;  ())
 
+;; 5.4 Record-type definitions
 
-(defclass record-type (scm-form)
+(defclass record-type (scm-object)
   ((type :accessor type :initarg :type)                 ; scm-symbol
    (val :accessor val :initarg :val)))                  ; alist
 
@@ -81,7 +82,7 @@
 (defclass record-type-field (scm-form)
   ((sym :accessor sym :initarg :sym)                    ; scm-symbol
    (access :accessor access :initarg :access)           ; scm-symbol
-   (modify :accessor modify :initarg :modify))          ; scm-symbol
+   (Modify :accessor modify :initarg :modify))          ; scm-symbol
 
 (defclass record-type-definition (definition)
   ((type :accessor type :initarg :type)                 ; scm-symbol
@@ -89,44 +90,67 @@
    (pred :accessor pred :initarg :pred)                 ; scm-symbol
    (fields :accessor fields :initarg :fields)))         ; record-type-field
 
+;; 5.5 Modules
 
-(defclass rename-form (scm-form)
+(defclass rename-pair (scm-form)
   ((from :accessor from :initarg :from)                 ; scm-symbol
    (to :accessor to :initarg :to)))                     ; scm-symbol
 
-(defclass only-form (scm-form)
-  ((mod :accessor mod :initarg :mod)
+(defclass scm-import-set (scm-form))
+
+(defclass import-only (scm-import-set)
+  ((im-set :accessor im-set :initarg :im-set)
    (syms :accessor syms :initarg :syms)))
 
-(defclass except-form (scm-form)
-  ((mod :accessor mod :initarg :mod)
+(defclass import-except (scm-import-set)
+  ((im-set :accessor im-set :initarg :im-set)
    (syms :accessor syms :initarg :syms)))
 
-(defclass prefix-form (scm-form)
-  ((mod :accessor mod :initarg :mod)
-   (pref :accessor pref :initarg :pref)))
+(defclass import-prefix (scm-import-set)
+  ((im-set :accessor im-set :initarg :im-set)
+   (sym :accessor sym :initarg :sym)))
 
-(defclass export-form (scm-form)
+(defclass import-rename (scm-import-set rename-pair)
+  ((im-set :accessor im-set :initarg :im-set)))
+
+(defclass cond-expand-clause (clause))
+
+
+(defclass module-export (scm-form)
   ((syms :accessor syms :initarg :syms)                 ; list of scm-symbol
-   (rename :accessor rename :initarg :rename)))
+   (renames :accessor renames :initarg :renames)))      ; list of rename-pair
 
-(defclass inport-form (scm-form)
-  ((mods :accessor mods :initarg :mods)
-   (only :accessor only :initarg :only)                 ;
-   (except :accessor except :initarg :except)           ;
-   (prefix ::accessor prefix :initarg :prefix)          ;
-   (begin :accessor begin :initarg :begin)              ; begin
-   (rename :accessor rename :initarg :rename)))
+(defclass module-import (scm-form)
+  ((exps :accessor exps :initarg :exps)))
 
-;(defclass incld (scm-form)
+(defclass module-incld (scm-form)
+  ((files :accessor files :initarg files)))
 
-(defclass module-form (scm-form)
-  ((syms :accessor syms :initarg :syms)                 ; list of scm-symbol
-   (exprt :accessor exprt :initarg :exprt)              ; export-form
-   (inprt :accessor inprt :initarg :inprt)              ; inport-form
-   (incld :accessor incld :initarg :incld)              ; include
-   (incld-ci :accessor incld-ci :initarg :incld-ci)     ; include-ci
-   (condex :accessor condex :initarg :condex)))         ; cond-expand
+(defclass module-incld-ci (scm-form)
+  ((files :accessor files :initarg files)))
+
+(defclass module-cond-expand (scm-form)
+  ((clauses :accessor clauses :initarg :clauses)))
+
+
+(defclass module-definition (scm-form)
+  ((syms :accessor syms :initarg :syms)
+   (exps :accessor exps :initarg :exps)
+   (mod-ex :accessor mod-ex :initarg :mod-ex)))
+
+;   (mod-im :accessor mod-im :initarg :mod-im)
+;   (mod-ex :accessor mod-ex :initarg :mod-ex)
+;   (mod-inc :accessor mod-inc :initarg :mod-inc)
+;   (mod-inc-ci :accessor mod-inc-ci :initarg :mod-inc-ci)
+;   (mod-cond :accessor mod-cond :initarg :mod-cond)
+;   (mod-begin :accessor mod-begin :initarg :mod-begin)))
+
+(defclass module (scm-object)
+  ((syms :accessor syms :initarg :syms)
+   (env :accessor env :initarg :env)))
+
+(defvar *scm-modules* nil)
+(defvar *scm-features* nil)
 
 
 ;;; 4.1.1. Variable references
@@ -209,6 +233,14 @@
 (defclass or-exp (scm-form)
   ((exps :accessor exps :initarg :exps)))
 
+(defclass or-exp (scm-form)
+  ((test :accessor test :initarg :test)
+   (exps :accessor exps :initarg :exps)))
+
+(defclass or-exp (scm-form)
+  ((test :accessor test :initarg :test)
+   (exps :accessor exps :initarg :exps)))
+
 
 ;;; 4.2.2. Binding constructs
 
@@ -216,8 +248,12 @@
   ((sym :accessor sym :initarg :sym)
    (init :accessor init :initarg :init)))
 
+(defclass mv-binding (scm-form)
+  ((syms :accessor syms :initarg :syms)
+   (init :accessor init :initarg :init)))
+
 (defclass let-exp (scm-form)
-  ((binds :accessor binds :initarg :binds)              ; list of binding
+  ((binds :accessor binds :initarg :binds)              ; list of binding or mv-binding
    (body :accessor body :initarg :body)))
 
 (defclass let*-exp (let-exp) ())
@@ -225,6 +261,10 @@
 (defclass letrec-exp (let-exp) ())
 
 (defclass letrec*-exp (let-exp) ())
+
+(defclass let-values-exp (let-exp) ())
+
+(defclass let*-values-exp (let-exp) ())
 
 
 ;;; 4.2.3. Sequencing
@@ -251,6 +291,10 @@
 
 
 ;;; 4.2.5. Delayed evaluation
+
+(defclass promiss (scm-form)
+  ((done :accessor done :initarg :done)
+   (proc :accessor proc :initarg :proc)))
 
 (defclass delay (scm-form)
   ((expr :accessor expr :initexp :exp)))

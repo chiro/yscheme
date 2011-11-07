@@ -38,7 +38,5 @@
 ;; env : ((("a" . 10) ("b" . 100)) (("c" . 1000) ("a" . 200)))
 
 (defun assoc-env (sym env)
-  (if env
-      (aif (assoc (name sym) (car env) :test #'string=)
-           it
-           (assoc-env sym (cdr env)))))
+  (or (assoc (name sym) (car env) :test #'string=)
+      (assoc-env sym (cdr env))))
