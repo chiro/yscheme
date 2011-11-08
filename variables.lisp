@@ -64,10 +64,12 @@
   ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
    (body :accessor body :initarg :body)))               ; list of scm-form
 
+
 ;; 5.3 Syntax definitions
 
 ;(defclass syntax-definition (definition)
 ;  ())
+
 
 ;; 5.4 Record-type definitions
 
@@ -89,6 +91,7 @@
    (const :accessor const :initarg :const)              ; record-type-const
    (pred :accessor pred :initarg :pred)                 ; scm-symbol
    (fields :accessor fields :initarg :fields)))         ; record-type-field
+
 
 ;; 5.5 Modules
 
@@ -113,7 +116,19 @@
 (defclass import-rename (scm-import-set rename-pair)
   ((im-set :accessor im-set :initarg :im-set)))
 
-(defclass cond-expand-clause (clause) ())
+
+(defclass cond-expand-clause (clause)
+  ((req :accessor req :initarg :req)))
+
+(defclass cond-expand-else-clause (clause) ())
+
+(defclass feature-requirement (scm-form) ())
+
+(defclass required-identifier (feature-requirement)
+  ((feature :accessor feature :initarg :feature)))      ; scm-symbol
+
+(defclass required-module (feature-requirement)
+  ((syms :accessor syms :initarg :syms)))               ; list of scm-symbol
 
 
 (defclass module-export (scm-form)
@@ -123,10 +138,10 @@
 (defclass module-import (scm-form)
   ((exps :accessor exps :initarg :exps)))
 
-(defclass module-incld (scm-form)
+(defclass module-include (scm-form)
   ((files :accessor files :initarg files)))
 
-(defclass module-incld-ci (scm-form)
+(defclass module-include-ci (scm-form)
   ((files :accessor files :initarg files)))
 
 (defclass module-cond-expand (scm-form)

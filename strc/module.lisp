@@ -14,6 +14,7 @@
 ;; features は
 ;; 処理系上の変数 *scm-features* を features-to-list により変換して
 ;; scheme上の変数 *features* にあるものとする(list of scm-symbol)
+;; *scm-modules* も同様にしたい
 
 (setf *scm-features*
       '("r7rs" "exact-closed" "ratios"
@@ -27,8 +28,6 @@
 (defun featrues-to-env (features)
   (mapcar (lambda (s) (cons s +true+))))
 
-;; cond-expand clause の features requirement の評価は
-;; env に features->env した環境のようなものを与えて scm-eval ?
 
 
 (defmethod scm-eval ((moddef module-definition) env)
@@ -37,7 +36,7 @@
       (dolist (exp exps)
         (scm-eval exp mod-env))
       (setf env (cons (scm-eval mod-ex mod-env) env))
-      (push (new 'module :syms syms :env mod-env) *scm-module*)
+      (push (new 'module :syms syms :env mod-env) *scm-modules*)
       +undefined+)))
 
 (defmethod scm-eval ((mod-ex module-export) env)
@@ -51,7 +50,7 @@
       new-env)))
 
 (defmethod scm-eval ((mod-im module-import) env)
-  (dolist (exp exps)
+  (dolist (exp (exps mod-im))
     (scm-eval exp env)))
 
 (defmethod scm-eval ((mod-inc module-include) env)
@@ -59,8 +58,33 @@
     (scm-eval (new 'scm-include :file file))))
 
 (defmethod scm-eval ((mod-inc-ci module-include-ci) env)
-  (dolist (file (files mod-inc))
+  (dolist (file (files mod-inc-ci))
     (scm-eval (new 'scm-include-ci :file file))))
 
-;(defmethod scm-eval ((mod-cond module-cond-expand) env)
-;  ((
+
+(defmethod scm-eval ((mod-cond module-cond-expand) env)
+  (labels ((rec (clauses)
+             (if (null clauses)
+                 +undefined+
+                 (or (scm-clause-eval (car clauses) env)
+                     (rec (cdr clauses))))))
+    (rec (clauses mod-cond))))
+
+(defmethod scm-clause-eval ((clause cond-expand-clause) env &key)
+  (if (scm-truep (scm-eval (req clause) env))
+      (call-next-method)))
+
+(defmethod scm-clause-eval ((clause cond-expand-clause) env &key)
+  (call-next-method))
+
+
+(defmethod scm-eval ((req required-identifier) env)
+  (if (member (name (feature req)) *scm-features* :test #'string=)
+      +true+ +false+))
+
+(defmethod scm-eval ((req required-module) env)
+  (if (member (mapcar #'name (syms req))
+              *scm-modules*
+              :key (lambda (m) (mapcar #'name (syms m)))
+              :test (lambda (l1 l2) (every #'string= l1 l2)))
+      +true+ +false+))

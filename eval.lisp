@@ -64,58 +64,53 @@
 
 ;;; 4.2.1. Conditionals
 
-(defgeneric scm-clause-eval-p (clause env &key)
+(defgeneric scm-clause-eval (clause env &key)
   (:documentation "clauseのexpsを評価すべきか否か、すべきならその値を第2値で返す"))
 
-(defmethod scm-clause-eval-p ((clause clause) env &key)
+(defmethod scm-clause-eval ((clause clause) env &key)
   (scm-eval (new 'begin :exps (exps clause))
             env))
 
-(defmethod scm-clause-eval-p ((clause cond-clause) env &key)
+(defmethod scm-clause-eval ((clause cond-clause) env &key)
   (with-slots (test exps) clause
     (aif (scm-truep (scm-eval test env))
          (if (null exps)
              it
              (call-next-method)))))
 
-(defmethod scm-clause-eval-p ((clause cond-clause-with-proc) env &key)
+(defmethod scm-clause-eval ((clause cond-clause-with-proc) env &key)
   (with-slots (test exps) clause
     (aif (scm-truep (scm-eval test env))
          (scm-apply (car exps) (list it)))))
 ;; => を読んだ段階で (car exps) は scm-procedure
 
-(defmethod scm-clause-eval-p ((clause cond-else-clause) env &key)
+(defmethod scm-clause-eval ((clause cond-else-clause) env &key)
   (call-next-method))
 
-(defmethod scm-clause-eval-p ((clause case-clause) env &key keyval)
+(defmethod scm-clause-eval ((clause case-clause) env &key keyval)
   (with-slots (datums exps) clause
     (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
       (if (member keyval datvals :test #'eqv?)
           (call-next-method)))))
 
-(defmethod scm-clause-eval-p ((clause case-clause-with-proc) env &key keyval)
+(defmethod scm-clause-eval ((clause case-clause-with-proc) env &key keyval)
   (with-slots (datums exps) clause
     (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
       (if (member keyval datvals :test #'eqv?)
           (scm-apply (car exps) (list keyval))))))
 
-(defmethod scm-clause-eval-p ((clause case-else-clause) env &key keyval)
+(defmethod scm-clause-eval ((clause case-else-clause) env &key keyval)
   (call-next-method))
 
-(defmethod scm-clause-eval-p ((clause case-else-clause-with-proc) env &key keyval)
+(defmethod scm-clause-eval ((clause case-else-clause-with-proc) env &key keyval)
   (scm-apply (car (exps clause)) (list keyval)))
-
-(defmethod scm-clause-eval-p ((clause do-end-clause) env &key)
-  (with-slots (test exps) clause
-    (if (scm-truep (scm-eval test env))
-        (call-next-method))))
 
 
 (defmethod scm-eval ((exp cond-exp) env)
   (labels ((rec (clauses)
              (if (null clauses)
                  +undefined+
-                 (or (scm-clause-eval-p (car clauses) env)
+                 (or (scm-clause-eval (car clauses) env)
                      (rec (cdr clauses))))))
     (rec (clauses exp))))
 
@@ -124,32 +119,26 @@
     (labels ((rec (clauses)
                (if (null clauses)
                    +undefined+
-                   (or (scm-clause-eval-p (car clauses) env :keyval keyval)
+                   (or (scm-clause-eval (car clauses) env :keyval keyval)
                        (rec (cdr clauses))))))
       (rec (clauses exp)))))
 
 
 (defmethod scm-eval ((exp and-exp) env)
   (with-slots (exps) exp
-    (cond ((null exps)
-           (new 'scm-boolean :val t))
+    (cond ((null exps) +true+)
           ((and (null (cdr exps)) (scm-truep (scm-eval (car exps) env)))
            (car exps))
           ((scm-truep (scm-eval (car exps) env))
-           (scm-eval (new 'and-exp :exps (cdr exps))
-                     env))
-          (t
-           (new 'scm-boolean :val nil)))))
+           (scm-eval (new 'and-exp :exps (cdr exps)) env))
+          (t +false+))))
 
 (defmethod scm-eval ((exp or-exp) env)
   (with-slots (exps) exp
-    (cond ((null exps)
-           (new 'scm-boolean :val nil))
-          ((scm-truep (scm-eval (car exps) env))
-           (car exps))
-          (t
-           (scm-eval (new 'or-exp :exps (cdr exps))
-                     env)))))
+    (cond ((null exps) +false+)
+          ((scm-truep (scm-eval (car exps) env)) (car exps))
+          (t (scm-eval (new 'or-exp :exps (cdr exps))
+                       env)))))
 
 (defmethod scm-eval ((exp when-exp) env)
   (with-slots (test exps) exp
@@ -249,6 +238,11 @@
 
 ;;; 4.2.4. Iteration
 
+(defmethod scm-clause-eval ((clause do-end-clause) env &key)
+  (with-slots (test exps) clause
+    (if (scm-truep (scm-eval test env))
+        (call-next-method))))
+
 (defmethod scm-eval ((exp do-exp) env)
   (with-slots (binds end body) exp
     (let ((new-frame
@@ -257,7 +251,7 @@
                    binds))
           (begin (new 'begin :exps body)))
       (labels ((rec (env)
-                 (or (scm-clause-eval-p end env)
+                 (or (scm-clause-eval end env)
                      (progn (scm-eval begin env)
                             (let ((new-frame
                                    (mapcar (lambda (bind)

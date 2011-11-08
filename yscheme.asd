@@ -42,8 +42,8 @@
                         :serial t
                         :components ((:file "def")
                                      ;; (:file "syndef")
-                                     ;; (:file "recdef")
-                                     ;; (:file "module")
+                                     (:file "recdef")
+                                     (:file "module")
                                      ))
 
                (:file "env")
