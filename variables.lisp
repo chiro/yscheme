@@ -8,7 +8,7 @@
 
 
 (defclass self-evaluating (scm-form)
-  ((val :accessor val :initarg :val)))
+  ((val :accessor val :initarg :val :initform (error "value required"))))
 ;; self-evaluating の val
 ;; scm-number    : initialize-instance の際に val を string-to-number する
 ;; scm-boolean   : 新たにインスタンスが生成されることはない(全て同一インスタンス)
@@ -18,7 +18,7 @@
 ;; scm-vector    : vector
 
 (defclass scm-number (self-evaluating)
-  ((ex :accessor ex :initarg :ex)))
+  ((ex :accessor ex :initarg :ex :initform nil)))
 
 (defclass scm-complex  (scm-number)   ())
 (defclass scm-real     (scm-complex)  ())
@@ -166,6 +166,25 @@
 
 (defvar *scm-modules* nil)
 (defvar *scm-features* nil)
+
+
+;;; 6.7.1. Ports
+
+(defclass scm-port (scm-object)
+  ((file :accessor file :initarg :file)
+   (direction :accessor direction :initarg :direction)
+   (strm :accessor strm :initarg :strm)))
+
+(defclass scm-character-port (scm-port) ())
+(defclass scm-binary-port (scm-port) ())
+
+(defclass scm-stdin (scm-object) ())
+(defclass scm-stdout (scm-object) ())
+(defclass scm-stderr (scm-object) ())
+
+(defvar +scm-stdin+ (new 'scm-stdin))
+(defvar +scm-stdout+ (new 'scm-stdout))
+(defvar +scm-stderr+ (new 'scm-stderr))
 
 
 ;;; 4.1.1. Variable references

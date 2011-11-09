@@ -8,36 +8,38 @@
 (define-predicate char? ((obj scm-character)) +false+ +true+)
 
 
+;; mapcar de yoi
+
 (define-compare char=? (objs)
-  :test (reduce (lambda (f s) (and f (char= (val f) (val s)) s)) objs))
+  :test (apply #'char= (mapcar #'val objs)))
 
 (define-compare char<? (objs)
-  :test (reduce (lambda (f s) (and f (char< (val f) (val s)) s)) objs))
+  :test (apply #'char< (mapcar #'val objs)))
 
 (define-compare char>? (objs)
-  :test (reduce (lambda (f s) (and f (char> (val f) (val s)) s)) objs))
+  :test (apply #'char> (mapcar #'val objs)))
 
 (define-compare char<=? (objs)
-  :test (reduce (lambda (f s) (and f (char<= (val f) (val s)) s)) objs))
+  :test (apply #'char<= (mapcar #'val objs)))
 
 (define-compare char>=? (objs)
-  :test (reduce (lambda (f s) (and f (char>= (val f) (val s)) s)) objs))
+  :test (apply #'char>= (mapcar #'val objs)))
 
 
 (define-compare char-ci=? (objs)
-  :test (reduce (lambda (f s) (and f (char-equal (val f) (val s)) s)) objs))
+  :test (apply #'char-equal (mapcar #'val objs)))
 
 (define-compare char-ci<? (objs)
-  :test (reduce (lambda (f s) (and f (char-lessp (val f) (val s)) s)) objs))
+  :test (apply #'char-lessp (mapcar #'val objs)))
 
 (define-compare char-ci>? (objs)
-  :test (reduce (lambda (f s) (and f (char-greaterp (val f) (val s)) s)) objs))
+  :test (apply #'char-greaterp (mapcar #'val objs)))
 
 (define-compare char-ci<=? (objs)
-  :test (reduce (lambda (f s) (and f (char-not-greaterp (val f) (val s)) s)) objs))
+  :test (apply #'char-not-greaterp (mapcar #'val objs)))
 
 (define-compare char-ci>=? (objs)
-  :test (reduce (lambda (f s) (and f (char-not-lessp (val f) (val s)) s)) objs))
+  :test (apply #'char-not-lessp (mapcar #'val objs)))
 
 
 (defgeneric character-alphabetic? (obj))
@@ -71,8 +73,7 @@
 
 (defgeneric integer->char (obj))
 (defmethod integer->char ((n scm-number))
-  (new 'scm-charater
-       :val (code-char (val scm-number))))
+  (new 'scm-charater :val (code-char (val n))))
 
 (defgeneric scm-char-upcase (obj))
 (defmethod scm-char-upcase ((char scm-character))

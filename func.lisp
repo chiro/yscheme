@@ -25,15 +25,8 @@
        (defmethod ,name (&rest ,parms)
          (if ,test +true+ +false+)))))
 
-
 (define-predicate scm-truep ((obj scm-boolean)) obj (val obj))
 
-
-; ?
-(define-predicate scm-dotted-list-p ((obj scm-pair)) nil
-  (labels ((rec (obj)
-             (if (null (val-cdr nil)) nil (rec (val-cdr obj)))))
-    (rec obj)))
 
 
 ;; env : ((("a" . 10) ("b" . 100)) (("c" . 1000) ("a" . 200)))
@@ -41,8 +34,18 @@
 
 (defun assoc-env (sym env)
   (let ((env (reverse env)))
-    (or (assoc (name sym) (car env) :test #'string=)
-        (assoc-env sym (cdr env)))))
+    (and env
+         (or (assoc-frame sym (car env))
+             (assoc-env sym (cdr env))))))
 
 (defun assoc-frame (sym frame)
   (assoc (name sym) frame :test #'string=))
+
+
+
+
+
+
+
+;(defun print-object (obj)
+;  (if

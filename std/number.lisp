@@ -29,13 +29,14 @@
              ,(case sel
                     (:first `(new 'scm-number :val ,v1 :ex ,exact))
                     (:second `(new 'scm-number :val ,v2 :ex ,exact))
-                    (:multi `(values (new 'scm-number :val ,v1 :ex ,exact)
-                                     (new 'scm-number :val ,v2 :ex ,exact))))))))))
+                    (:multi `(list (new 'scm-number :val ,v1 :ex ,exact)
+                                   (new 'scm-number :val ,v2 :ex ,exact))))))))))
 
 (defmethod initialize-instance :after ((num scm-number) &key)
-  (let ((val (val num)))
-    (when (stringp val)
-      (setf val (string->number val)))
+  (with-slots (val ex) num
+    (setf val (if (ex num) (rational val) (float val)))
+    (format t "value:~A~%" val)
+    (format t "exactness:~A~%" ex)
     (change-class num (number-class-of val))))
 
 ;; 入出力時の表現として #e, #i がなければ、小数点の有無で正確性を区別する
@@ -49,23 +50,28 @@
 (define-predicate integer? ((obj scm-integer)) +false+ +true+)
 
 (define-predicate exact? ((obj scm-number)) +false+
-  (if (scm-truep (ex obj)) +true+ +false+))
+  (if (ex obj) +true+ +false+))
 
 (define-predicate inexact? ((obj scm-number)) +false+
-  (if (not (scm-truep (ex obj))) +true+ +false+))
+  (if (not (ex obj)) +true+ +false+))
 
 (define-predicate exact-integer? ((obj scm-integer)) +false+
-  (if (scm-truep (ex obj)) +true+ +false+))
+  (if (ex obj) +true+ +false+))
 
-(define-predicate infinite? ((obj scm-finite)) +false+ +true+)
+(define-predicate finite? ((obj scm-finite)) +false+ +true+)
 (define-predicate infinite? ((obj scm-infinity)) +false+ +true+)
 (define-predicate nan? ((obj scm-nan)) +true+)
 
-(define-numerical-operation scm-= :op #'=)
-(define-numerical-operation scm-< :op #'<)
-(define-numerical-operation scm-> :op #'>)
-(define-numerical-operation scm-<= :op #'<=)
-(define-numerical-operation scm->= :op #'>=)
+(define-compare scm-= (objs)
+  :test (apply #'= (mapcar #'val objs)))
+(define-compare scm-< (objs)
+  :test (apply #'< (mapcar #'val objs)))
+(define-compare scm-> (objs)
+  :test (apply #'> (mapcar #'val objs)))
+(define-compare scm-<= (objs)
+  :test (apply #'<= (mapcar #'val objs)))
+(define-compare scm->= (objs)
+  :test (apply #'>= (mapcar #'val objs)))
 
 (define-predicate zero? ((obj scm-integer)) +false+
   (if (= 0 (val obj)) +true+ +false+))
@@ -154,42 +160,51 @@
 
 (define-numerical-operation scm-sqrt :op #'sqrt :ex nil)
 
-(define-numerical-operation scm-exact-integer-sqrt :op #'sqrt)
+(defun exact-integer-sqrt (k)
+  (let ((int (truncate (sqrt k))))
+    (if (minusp k)
+        (values 0 k)
+        (values int (- k (* int int))))))
+
+(define-numerical-operation scm-exact-integer-sqrt :op #'exact-integer-sqrt :ex t)
 
 (define-numerical-operation scm-expt :op #'expt)
 
-;(define-numerical-operation scm-mkae-rectangular :op #')
-;(define-numerical-operation scm-make-polar :op #')
+(define-numerical-operation scm-make-rectangular :op #'complex)
+(define-numerical-operation scm-make-polar :ex nil
+    :op (lambda (z3 z4) (complex (* z3 (cos z4)) (* z3 (sin z4)))))
 (define-numerical-operation scm-real-part :op #'realpart)
 (define-numerical-operation scm-imag-part :op #'imagpart)
 (define-numerical-operation scm-magnitude :op #'abs)
 (define-numerical-operation scm-angle
-    :op #'(lambda (z) (atan (imagpart z) (realpart z))))
+    :op (lambda (z) (atan (imagpart z) (realpart z))))
 
-(define-numerical-operation scm-exact->inexact :op #'(lambda (z) z) :ex nil)
-(define-numerical-operation scm-inexact->exact :op #'(lambda (z) z) :ex t)
+(define-numerical-operation scm-exact->inexact :op #'float :ex nil)
+(define-numerical-operation scm-inexact->exact :op #'rational :ex t)
 
 
-;; 数値を表す文字列->数値 : 全射(単射でない) 基数に関する情報は落ちる
-;; 数値->数値を表す文字列 : 単射(全射でない)
-;(defun number-to-string (num radix)
-;  ())
+(defun number-to-string (num radix)
+  (format nil "\#~A~A"
+          (case radix (2 "b") (8 "o") (10 "d") (16 "x"))
+          num))
 
 (defgeneric number->string (obj1 &optional obj2))
 (defmethod number->string
     ((num scm-number) &optional (radix (new 'scm-number :val 10 :ex t)))
-  (number-to-string num radix))
+  (new 'scm-string
+       :val (number-to-string (val num) (val radix))))
 
 
-;(defun string-to-number (str radix)
-;  ())
+;; 臨時
+(defun string-to-number (str radix)
+  (read-from-string str))
 
-;(defun string-of-exact-number-p (str)
-;  ())
+(defun string-of-exact-number-p (str)
+  (find "." str))
 
 (defgeneric string->number (obj1 &optional obj2))
 (defmethod string->number
     ((str scm-string) &optional (radix (new 'scm-number :val 10 :ex t)))
   (new 'scm-number
-       :val (string-to-number str radix)
-       :ex (string-of-exact-number str)))
+       :val (string-to-number (val str) (val radix))
+       :ex (string-of-exact-number-p (val str))))

@@ -86,5 +86,5 @@
   (if (member (mapcar #'name (syms req))
               *scm-modules*
               :key (lambda (m) (mapcar #'name (syms m)))
-              :test (lambda (l1 l2) (every #'string= l1 l2)))
+              :test (lambda (l1 l2) (every #'equal l1 l2)))
       +true+ +false+))

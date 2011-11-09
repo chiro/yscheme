@@ -48,8 +48,8 @@
 (define-compare string-ci<? (strs)
   :test (reduce (lambda (f s) (and f (string-lessp (val f) (val s)) s)) strs))
 
-(define-compare string-ni<? (strs)
-  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
+;(define-compare string-ni<? (strs)
+;  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
 
 
 (define-compare string>? (strs)
@@ -58,8 +58,8 @@
 (define-compare string-ci>? (strs)
   :test (reduce (lambda (f s) (and f (string-greaterp (val f) (val s)) s)) strs))
 
-(define-compare string-ni>? (strs)
-  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
+;(define-compare string-ni>? (strs)
+;  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
 
 
 (define-compare string<=? (strs)
@@ -68,18 +68,18 @@
 (define-compare string-ci<=? (strs)
   :test (reduce (lambda (f s) (and f (string-not-greaterp (val f) (val s)) s)) strs))
 
-(define-compare string-ni<=? (strs)
-  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
+;(define-compare string-ni<=? (strs)
+;  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
 
 
 (define-compare string>=? (strs)
   :test (reduce (lambda (f s) (and f (string>= (val f) (val s)) s)) strs))
 
-(define-compare string>=? (strs)
+(define-compare string-ci>=? (strs)
   :test (reduce (lambda (f s) (and f (string-not-lessp (val f) (val s)) s)) strs))
 
-(define-compare string>=? (strs)
-  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
+;(define-compare string-ni>=? (strs)
+;  :test (reduce (lambda (f s) (and f (string- (val f) (val s)) s)) strs))
 
 
 (defgeneric scm-string-upcase (obj))
@@ -87,17 +87,17 @@
   (new 'scm-string
        :val (concatenate 'string
                          (mapcar #'cl-unicode:uppercase-mapping
-                                 (concatenate 'list (val strs))))))
+                                 (concatenate 'list (val str))))))
 
 (defgeneric scm-string-downcase (obj))
-(defmethod scm-string-downcase ((obj scm-string))
+(defmethod scm-string-downcase ((str scm-string))
   (new 'scm-string
        :val (concatenate 'string
                          (mapcar #'cl-unicode:lowercase-mapping
-                                 (concatenate 'list (val strs))))))
+                                 (concatenate 'list (val str))))))
 
 (defgeneric string-foldcase (obj))
-(defmethod string-foldcase ((obj scm-string))
+(defmethod string-foldcase ((str scm-string))
   (new 'scm-string
        :val (concatenate
              'string
@@ -107,7 +107,7 @@
                        (cl-unicode:lowercase-mapping c))
                       ((char= (char (cl-unicode:general-category c) 1) #\l)
                        (cl-unicode:uppercase-mapping c))))
-              (concatenate 'list (val strs))))))
+              (concatenate 'list (val str))))))
 
 (defgeneric substring (obj1 obj2 obj3))
 (defmethod substring ((str scm-string) (start scm-integer) (end scm-integer))
@@ -119,7 +119,7 @@
 
 (defgeneric string->list (obj))
 (defmethod string->list ((str scm-string))
-  (scm-apply #'smc-list
+  (scm-apply #'scm-list
              (mapcar (lambda (c) (new 'scm-character :val c))
                      (concatenate 'list (val str)))))
 
