@@ -93,13 +93,16 @@
    (fields :accessor fields :initarg :fields)))         ; record-type-field
 
 
-;; 5.5 Modules
+;; 5.5 Libraries
 
 (defclass rename-pair (scm-form)
   ((from :accessor from :initarg :from)                 ; scm-symbol
    (to :accessor to :initarg :to)))                     ; scm-symbol
 
 (defclass scm-import-set (scm-form) ())
+
+(defclass import-library (scm-import-set)
+  ((syms :accessor syms :initarg :syms)))
 
 (defclass import-only (scm-import-set)
   ((im-set :accessor im-set :initarg :im-set)
@@ -127,28 +130,28 @@
 (defclass required-identifier (feature-requirement)
   ((feature :accessor feature :initarg :feature)))      ; scm-symbol
 
-(defclass required-module (feature-requirement)
+(defclass required-library (feature-requirement)
   ((syms :accessor syms :initarg :syms)))               ; list of scm-symbol
 
 
-(defclass module-export (scm-form)
+(defclass library-export (scm-form)
   ((syms :accessor syms :initarg :syms)                 ; list of scm-symbol
    (renames :accessor renames :initarg :renames)))      ; list of rename-pair
 
-(defclass module-import (scm-form)
+(defclass library-import (scm-form)
   ((exps :accessor exps :initarg :exps)))
 
-(defclass module-include (scm-form)
+(defclass library-include (scm-form)
   ((files :accessor files :initarg files)))
 
-(defclass module-include-ci (scm-form)
+(defclass library-include-ci (scm-form)
   ((files :accessor files :initarg files)))
 
-(defclass module-cond-expand (scm-form)
+(defclass library-cond-expand (scm-form)
   ((clauses :accessor clauses :initarg :clauses)))
 
 
-(defclass module-definition (scm-form)
+(defclass Library-definition (scm-form)
   ((syms :accessor syms :initarg :syms)
    (exps :accessor exps :initarg :exps)
    (mod-ex :accessor mod-ex :initarg :mod-ex)))
@@ -160,11 +163,11 @@
 ;   (mod-cond :accessor mod-cond :initarg :mod-cond)
 ;   (mod-begin :accessor mod-begin :initarg :mod-begin)))
 
-(defclass module (scm-object)
+(defclass library (scm-object)
   ((syms :accessor syms :initarg :syms)
    (env :accessor env :initarg :env)))
 
-(defvar *scm-modules* nil)
+(defvar *scm-libraries* nil)
 (defvar *scm-features* nil)
 
 
@@ -182,9 +185,9 @@
 (defclass scm-stdout (scm-object) ())
 (defclass scm-stderr (scm-object) ())
 
-(defvar +scm-stdin+ (new 'scm-stdin))
-(defvar +scm-stdout+ (new 'scm-stdout))
-(defvar +scm-stderr+ (new 'scm-stderr))
+;(defvar +scm-stdin+ (new 'scm-stdin))
+;(defvar +scm-stdout+ (new 'scm-stdout))
+;(defvar +scm-stderr+ (new 'scm-stderr))
 
 
 ;;; 4.1.1. Variable references

@@ -30,7 +30,7 @@
 
 (defgeneric vector->list (obj))
 (defmethod vector->list ((vec scm-vector))
-  (scm-apply #'smc-list
+  (scm-apply #'scm-list
              (mapcar (lambda (o) o) (concatenate 'list (val vec)))))
 
 (defgeneric list->vector (obj))

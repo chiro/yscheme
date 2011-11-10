@@ -43,7 +43,7 @@
                         :components ((:file "def")
                                      ;; (:file "syndef")
                                      (:file "recdef")
-                                     (:file "module")
+                                     (:file "libdef")
                                      ))
 
                (:file "env")
