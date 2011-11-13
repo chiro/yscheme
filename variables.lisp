@@ -1,6 +1,9 @@
 (in-package :yscheme)
 
 
+(defvar *eval-count* 0)
+(defvar *max-eval-count* 1000)
+
 (defclass scm-object () ())
 (defclass scm-form (scm-object) ())
 (defclass scm-undefined (scm-object) ())
@@ -48,7 +51,7 @@
 (defclass scm-character  (self-evaluating) ())          ; val = character
 (defclass scm-string     (self-evaluating) ())          ; val = string
 (defclass scm-vector     (self-evaluating) ())          ; val = vector
-(defclass scm-bytevector (self-evaluating) ())          ; val = vector
+(defclass scm-bytevector (self-vector) ())              ; val = vector
 
 
 
@@ -179,15 +182,25 @@
    (strm :accessor strm :initarg :strm)))
 
 (defclass scm-character-port (scm-port) ())
-(defclass scm-binary-port (scm-port) ())
+(defclass scm-binary-port (scm-port)
+  ((buff :accessor buff :initarg :buff :initform nil)))
 
-(defclass scm-stdin (scm-object) ())
-(defclass scm-stdout (scm-object) ())
-(defclass scm-stderr (scm-object) ())
+(defclass scm-standard-input (scm-port) ())
+(defclass scm-standard-output (scm-port) ())
+(defclass scm-standard-error (scm-port) ())
 
-;(defvar +scm-stdin+ (new 'scm-stdin))
-;(defvar +scm-stdout+ (new 'scm-stdout))
-;(defvar +scm-stderr+ (new 'scm-stderr))
+(defvar *scm-standard-input*
+  (make-instance 'scm-standard-input :direction :input :strm *standard-input*))
+(defvar *scm-standard-output*
+  (make-instance 'scm-standard-output :direction :output :strm *standard-output*))
+(defvar *scm-standard-error*
+  (make-instance 'scm-standard-error :direction :output :strm *error-output*))
+
+(defvar *current-input-port* *scm-standard-input*)
+(defvar *current-output-port* *scm-standard-output*)
+
+(defclass scm-eof (scm-object) ())
+(defvar +eof+ (make-instance 'scm-eof))
 
 
 ;;; 4.1.1. Variable references

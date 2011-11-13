@@ -4,14 +4,17 @@
 (defgeneric scm-eval (exp env)
   (:documentation ""))
 
-
 (defmethod scm-eval ((exp self-evaluating) env)
   exp)
 
-
-
 (defmethod scm-eval ((obj list) env) ; multiple-values
   (scm-eval (car obj) env))
+
+(defmethod scm-eval :around (obj env)
+  (declare (ignorable obj env))
+  (if (<= (incf *eval-count*) *max-eval-count*)
+      (call-next-method)
+      (error "out of memory (仮)")))
 
 
 ;;; 4.1.1. Variable references

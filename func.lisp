@@ -28,7 +28,6 @@
 (define-predicate scm-truep ((obj scm-boolean)) obj (val obj))
 
 
-
 ;; env : ((("a" . 10) ("b" . 100)) (("c" . 1000) ("a" . 200)))
 ;; env は後ろの方のフレームから先に読まれることに
 
@@ -43,9 +42,5 @@
 
 
 
-
-
-
-
-;(defun print-object (obj)
-;  (if
+;(mapcar (lambda (sym) (format t "~W~%" (string-downcase (string sym))))
+;        '(

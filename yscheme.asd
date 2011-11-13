@@ -36,6 +36,7 @@
                                      (:file "vector")
                                      (:file "bytevector")
                                      (:file "control")
+                                     (:file "io")
                                      ))
 
                (:module strc

@@ -60,3 +60,12 @@
 
 (defun interaction-environment ()
   *interaction-environment*)
+
+(defun make-environment (names)
+  (list (mapcar
+         (lambda (name)
+           (cons name
+                 (new 'primitive-procedure
+                      :func (symbol-function
+                             (read-from-string
+                              (concatenate 'string *scheme-prefix* "-" name)))))))))

@@ -84,7 +84,7 @@
 
 (defmethod scm-eval ((form import-prefix) env)
   (with-slots (im-set sym) form
-    (let ((lib-env (scm-eval im-set env)))n
+    (let ((lib-env (scm-eval im-set env)))
       (mapcar (lambda (frame)
                 (mapcar (lambda (entry)
                           (cons (concatenate 'string (name sym) (car entry))
