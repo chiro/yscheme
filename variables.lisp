@@ -1,6 +1,8 @@
 (in-package :yscheme)
 
 
+(defvar *scheme-function-prefix* "scm-")
+
 (defvar *eval-count* 0)
 (defvar *max-eval-count* 1000)
 
@@ -8,6 +10,8 @@
 (defclass scm-form (scm-object) ())
 (defclass scm-undefined (scm-object) ())
 (defvar +undefined+ (make-instance 'scm-undefined))
+
+(defparameter *interaction-environment* nil)
 
 
 (defclass self-evaluating (scm-form)
@@ -365,5 +369,3 @@
 
 ;;; 4.2.7. Exception Handling
 
-;(defclass guard (scm-form)
-;  ((
