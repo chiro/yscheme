@@ -1,8 +1,9 @@
-(defparameter *env (scheme-report-environment 7))
+(defparameter *env
+  (scm-scheme-report-environment (new 'scm-number :val 7 :ex t)))
 
 (defparameter *proc
-  (scm-eval (parse-program-from-file "./fact.scm")
-            env))
+  (scm-eval (parse-program-from-file "./test/fact.scm")
+            *env))
 (defparameter *result (scm-eval (parse-program "(fact 10)") *env))
 
 

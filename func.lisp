@@ -52,5 +52,13 @@
 
 
 
-;(mapcar (lambda (sym) (format t "~W~%" (string-downcase (string sym))))
-;        '(
+;(defun parse0 (text)
+;  (let ((obj (esrap::parse 'yscheme::program (mkstr text " "))))
+;    (if (listp obj) (car obj) obj)))
+
+(defun num-with-exactness (exactness num)
+  (cond ((and exactness (string= exactness "#e"))
+         (rational num))
+        ((and exactness (string= exactness "#i"))
+         (float num))
+        (t num)))

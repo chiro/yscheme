@@ -20,7 +20,7 @@
 (esrap:defrule scm_symbol identifier)
 
 (esrap:defrule compound_datum
-    (esrap::or scm-list vector))
+    (esrap::or scm-list scm-vector))
 
 (esrap:defrule scm-list
     (esrap::or (esrap::and "(" intertoken_space
@@ -30,11 +30,14 @@
                            (esrap:+ (esrap::and datum intertoken_space))
                            "." intertoken_space
                            datum intertoken_space ")")
-               abbreviation
-               )
+               abbreviation)
   (:lambda (data)
-    (cond ((= (length data) 5) (cons :scm-list (mapcar #'car (caddr data))))
-          ((= (length data) 8) (list :scm-dotted-list (mapcar #'car (caddr data)) (caddr (cdddr data))))
+    (cond ((= (length data) 5)
+           ;; (cons :scm-list (mapcar #'car (caddr data))))
+           (scm-general-list (make-instance 'scm-nil) (mapcar #'car (caddr data))))
+          ((= (length data) 8)
+           ;; (list :scm-dotted-list (mapcar #'car (caddr data)) (caddr (cdddr data))))
+           (scm-general-list (caddr (cdddr data)) (mapcar #'car (caddr data))))
           (t (cons :scm-abbreviation data))))
 )
 
@@ -44,10 +47,12 @@
 (esrap:defrule abbrev_prefix
     (esrap::or "\'" "\`" ",@" ","))
 
-(esrap:defrule vector
+(esrap:defrule scm-vector
     (esrap::and "#(" intertoken_space
-                (esrap:* (esrap::and datum intertoken_space))
-                ")" ))
+                (esrap:* (esrap::and datum intertoken_space)) ")")
+  (:destructure (lvp isp dat rvp)
+                (make-instance 'scm-vector
+                               :val (concatenate 'vector (mapcar #'car dat)))))
 
 (esrap:defrule label
     (esrap::and "#" (esrap:+ digit10)))

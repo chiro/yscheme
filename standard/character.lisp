@@ -67,15 +67,12 @@
 (defgeneric scm-digit-value (obj))
 (defmethod scm-digit-value ((char scm-character))
   (if (char= (char (cl-unicode:general-category (val char)) 0) #\N)
-      (new 'scm-number
-           :val (cl-unicode:numeric-value (val char))
-           :ex t)
+      (new 'scm-number :val (cl-unicode:numeric-value (val char)))
       +false+))
 
 (defgeneric scm-char->integer (obj))
 (defmethod scm-char->integer ((char scm-character))
-  (new 'scm-number
-       :val (char-code (val char)) :ex t))
+  (new 'scm-number :val (char-code (val char))))
 
 (defgeneric scm-integer->char (obj))
 (defmethod scm-integer->char ((n scm-number))
@@ -83,13 +80,11 @@
 
 (defgeneric scm-char-upcase (obj))
 (defmethod scm-char-upcase ((char scm-character))
-  (new 'scm-character
-       :val (cl-unicode:uppercase-mapping (val char))))
+  (new 'scm-character :val (cl-unicode:uppercase-mapping (val char))))
 
 (defgeneric scm-char-downcase (obj))
 (defmethod scm-char-downcase ((char scm-character))
-  (new 'scm-character
-       :val (cl-unicode:lowercase-mapping (val char) 0)))
+  (new 'scm-character :val (cl-unicode:lowercase-mapping (val char) 0)))
 
 (defgeneric scm-char-foldcase (obj))
 (defmethod scm-char-foldcase ((char scm-character))

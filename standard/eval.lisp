@@ -22,7 +22,7 @@
 (defmethod scm-eval ((sym scm-symbol) env)
   (aif (assoc-env sym env)
        (cdr it)
-       (warn "unbound variable ~A" (name sym))))
+       (error "unbound variable ~A" (name sym))))
 
 
 ;;; 4.1.2. Literal expressions
@@ -61,7 +61,7 @@
   (with-slots (sym val) exp
     (aif (assoc-env sym env)
          (setf (cdr it) (scm-eval val env))
-         (warn "undefined variable ~A" (name sym)))
+         (error "undefined variable ~A" (name sym)))
     val))
 
 
@@ -93,13 +93,13 @@
 (defmethod scm-clause-eval ((clause case-clause) env &key keyval)
   (with-slots (datums exps) clause
     (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
-      (if (member keyval datvals :test #'eqv?)
+      (if (member keyval datvals :test #'scm-eqv?)
           (call-next-method)))))
 
 (defmethod scm-clause-eval ((clause case-clause-with-proc) env &key keyval)
   (with-slots (datums exps) clause
     (let ((datvals (mapcar (lambda (dat) (scm-eval dat env)) datums)))
-      (if (member keyval datvals :test #'eqv?)
+      (if (member keyval datvals :test #'scm-eqv?)
           (scm-apply (car exps) (list keyval))))))
 
 (defmethod scm-clause-eval ((clause case-else-clause) env &key keyval)

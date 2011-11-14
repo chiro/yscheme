@@ -29,9 +29,9 @@
 
 (define-predicate scm-null? ((obj scm-nil)) +false+ +true+)
 
-(define-predicate scm-list? ((obj scm-pair)) +false+
+(define-predicate scm-list? ((obj scm-list)) +false+
   (cond ((scm-truep (scm-null? obj)) +true+)
-        ((scm-truep (scm-pair? obj)) (scm-list? (cdr obj)))
+        ((scm-truep (scm-pair? obj)) (scm-list? (val-cdr obj)))
         (t +false+)))
 
 (defgeneric scm-make-list (obj1 &optional obj2))
@@ -41,23 +41,30 @@
                (new 'scm-pair :val-car obj :val-cdr result)))
       ((>= 0 i) result)))
 
+(defun scm-general-list (init objs)
+  (do ((objs (reverse objs) (cdr objs))
+       (result init (new 'scm-pair :val-car (car objs) :val-cdr result)))
+      ((null objs) result)))
+
 (defgeneric scm-list (&rest objs))
 (defmethod scm-list (&rest objs)
-  (do ((objs (reverse objs) (cdr objs))
-       (result (new 'scm-nil)
-               (new 'scm-pair :val-car (car objs) :val-cdr result)))
-      ((null objs) result)))
+  (scm-general-list (new 'scm-nil) objs))
 
 (defgeneric scm-length (obj))
 (defmethod scm-length ((list scm-list))
   (do ((i 0 (1+ i))
        (list list (val-cdr list)))
-      ((scm-truep (scm-null? list)) (new 'scm-number :val i :ex t))))
+      ((scm-truep (scm-null? list)) (new 'scm-number :val i))))
+
+(defun scm-last1 (list)
+  (if (scm-truep (scm-pair? list))
+      (scm-last1 (val-cdr list))
+      list))
 
 (defgeneric scm-append (&rest objs))
 (defmethod scm-append (&rest objs)
   (do ((objs (reverse objs) (cdr objs))
-       (result (new 'scm-nil)
+       (result (scm-last1 (last1 objs))
                (do ((list (scm-reverse (car objs)) (val-cdr list))
                     (rslt result (new 'scm-pair :val-car (val-car list) :val-cdr rslt)))
                    ((scm-truep (scm-null? list)) rslt))))
@@ -68,7 +75,7 @@
   (do ((list list (val-cdr list))
        (result (new 'scm-nil)
                (new 'scm-pair :val-car (val-car list) :val-cdr result)))
-      ((scm-truep (scm-null? list)) result)))
+      ((not (scm-truep (scm-pair? list))) result)))
 
 (defgeneric scm-list-tail (obj1 obj2))
 (defmethod scm-list-tail ((list scm-list) (k scm-integer))

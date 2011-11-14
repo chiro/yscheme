@@ -8,7 +8,7 @@
 
 (defgeneric scm-make-bytevector (obj1 &optional obj2))
 (defmethod scm-make-bytevector
-    ((k scm-integer) &optional (byte (new 'scm-number :val 0 :ex t)))
+    ((k scm-integer) &optional (byte (new 'scm-number :val 0)))
   (new 'scm-bytevecter
        :val (make-array (val k) :element-type 'vector :initial-element byte)))
 

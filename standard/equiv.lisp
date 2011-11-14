@@ -43,7 +43,7 @@
 (defgeneric scm-eq? (obj1 obj2)
   (:documentation ""))
 
-(defmethod scm-eq? (obj1 obj2) (eqv? obj1 obj2))
+(defmethod scm-eq? (obj1 obj2) (scm-eqv? obj1 obj2))
 
 
 
@@ -57,4 +57,3 @@
 
 ;(defmethod scm-equal? ((obj1 scm-vector) (obj2 scm-vector))
 ;  )
-

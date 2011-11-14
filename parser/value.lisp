@@ -102,9 +102,13 @@
 
 (esrap::defrule yscheme::scm_bytevector
     (esrap::and "#u8(" intertoken_space
-                (esrap::* (esrap::and scm-byte intertoken_space)) ")"))
+                (esrap::* (esrap::and scm-byte intertoken_space)) ")")
+  (:destructure (lvp isp dat rvp)
+                (make-instance 'scm-bytevector
+                               :val (concatenate 'vector (mapcar #'car dat)))))
 
 (esrap::defrule yscheme::scm-byte
     (byte-p (esrap::+ digit))
-  (:lambda (digs) (parse-integer (charl-to-str digs))))
+  (:lambda (digs)
+    (make-instance 'scm-number :val (parse-integer (charl-to-str digs)))))
 

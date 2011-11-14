@@ -3,8 +3,8 @@
 
 (defvar *scheme-function-prefix* "scm-")
 
-(defvar *eval-count* 0)
-(defvar *max-eval-count* 1000)
+(defparameter *eval-count* 0)
+(defparameter *max-eval-count* 100000)
 
 (defclass scm-object () ())
 (defclass scm-form (scm-object) ())
@@ -24,8 +24,7 @@
 ;; scm-string    : string
 ;; scm-vector    : vector
 
-(defclass scm-number (self-evaluating)
-  ((ex :accessor ex :initarg :ex :initform nil)))
+(defclass scm-number (self-evaluating) ())
 
 (defclass scm-complex  (scm-number)   ())
 (defclass scm-real     (scm-complex)  ())
@@ -55,7 +54,7 @@
 (defclass scm-character  (self-evaluating) ())          ; val = character
 (defclass scm-string     (self-evaluating) ())          ; val = string
 (defclass scm-vector     (self-evaluating) ())          ; val = vector
-(defclass scm-bytevector (self-vector) ())              ; val = vector
+(defclass scm-bytevector (self-evaluating) ())          ; val = vector
 
 
 

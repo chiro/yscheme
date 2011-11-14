@@ -46,7 +46,8 @@
                 expression intertoken_space
                 ")")
   (:destructure (sf p1 s1 def s2 var s3 exp s4 p2)
-                (list :define var exp))
+;                (list :define var exp))
+                (make-instance 'variable-definition :sym var :val exp))
 )
 
 (esrap::defrule def_func

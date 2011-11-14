@@ -9,23 +9,19 @@
 (defgeneric scm-make-string (obj1 &optional obj2))
 (defmethod scm-make-string
     ((k scm-integer) &optional (char (new 'scm-character :val #\Null)))
-  (new 'scm-string
-       :val (make-string (val k) :initial-element (val char))))
+  (new 'scm-string :val (make-string (val k) :initial-element (val char))))
 
 (defgeneric scm-string (&rest objs))
 (defmethod scm-string (&rest chars)
-  (new 'scm-string
-       :val (concatenate 'string (mapcar #'val chars))))
+  (new 'scm-string :val (concatenate 'string (mapcar #'val chars))))
 
 (defgeneric scm-string-length (obj))
 (defmethod scm-string-length ((str scm-string))
-  (new 'scm-number
-       :val (length (val str))))
+  (new 'scm-number :val (length (val str))))
 
 (defgeneric scm-string-ref (obj1 obj2))
 (defmethod scm-string-ref ((str scm-string) (k scm-integer))
-  (new 'scm-character
-       :val (char (val str) (val k))))
+  (new 'scm-character :val (char (val str) (val k))))
 
 (defgeneric scm-string-set! (obj1 obj2 obj3))
 (defmethod scm-string-set! ((str scm-string) (k scm-integer) (char scm-character))

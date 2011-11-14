@@ -8,39 +8,29 @@
 
 (defun number-class-of (val)
   (cond ((integerp val)      'scm-integer)
-        ((zerop (mod val 1)) 'scm-integer)
+        ((and (realp val) (zerop (mod val 1))) 'scm-integer)
         ((rationalp val)     'scm-rational)
         ((floatp val)        'scm-rational)
         ((realp val)         'scm-real)
         ((complexp val)      'scm-complex)))
 
-(defmacro define-numerical-operation (name &key op ex (sel :first))
+(defmacro define-numerical-operation (name &key op (sel :first))
   ;; sel :first :second :multi
-  (with-gensyms (parm exact v1 v2)
+  (with-gensyms (parm v1 v2)
     `(progn
        (defgeneric ,name (&rest ,parm))
        (defmethod ,name (&rest ,parm)
          (multiple-value-bind (,v1 ,v2)
              (apply ,op (mapcar (lambda (num) (val num)) ,parm))
            (declare (ignorable ,v1 ,v2))
-           (let ((,exact (or ,ex
-                             (reduce (lambda (f s) (and f s))
-                                     (mapcar (lambda (num) (ex num)) ,parm)))))
-             ,(case sel
-                    (:first `(new 'scm-number :val ,v1 :ex ,exact))
-                    (:second `(new 'scm-number :val ,v2 :ex ,exact))
-                    (:multi `(list (new 'scm-number :val ,v1 :ex ,exact)
-                                   (new 'scm-number :val ,v2 :ex ,exact))))))))))
+           ,(case sel
+                  (:first `(new 'scm-number :val ,v1))
+                  (:second `(new 'scm-number :val ,v2))
+                  (:multi `(list (new 'scm-number :val ,v1)
+                                 (new 'scm-number :val ,v2)))))))))
 
 (defmethod initialize-instance :after ((num scm-number) &key)
-  (with-slots (val ex) num
-    (setf val (if (ex num) (rational val) (float val)))
-    (format t "value:~A~%" val)
-    (format t "exactness:~A~%" ex)
-    (change-class num (number-class-of val))))
-
-;; 入出力時の表現として #e, #i がなければ、小数点の有無で正確性を区別する
-;; 1 : exact, 1.0 : inexaxt
+  (change-class num (number-class-of (val num))))
 
 
 (define-predicate scm-number? ((obj scm-number)) +false+ +true+)
@@ -50,13 +40,13 @@
 (define-predicate scm-integer? ((obj scm-integer)) +false+ +true+)
 
 (define-predicate scm-exact? ((obj scm-number)) +false+
-  (if (ex obj) +true+ +false+))
+  (if (rationalp (val obj)) +true+ +false+))
 
 (define-predicate scm-inexact? ((obj scm-number)) +false+
-  (if (not (ex obj)) +true+ +false+))
+  (if (floatp (val obj)) +true+ +false+))
 
 (define-predicate scm-exact-integer? ((obj scm-integer)) +false+
-  (if (ex obj) +true+ +false+))
+  (if (rationalp (val obj)) +true+ +false+))
 
 (define-predicate scm-finite? ((obj scm-finite)) +false+ +true+)
 (define-predicate scm-infinite? ((obj scm-infinity)) +false+ +true+)
@@ -155,16 +145,16 @@
 
 (define-numerical-operation scm-rationalize :op #'scm-rationalize0)
 
-(define-numerical-operation scm-exp :op #'exp :ex nil)
-(define-numerical-operation scm-log :op #'log :ex nil)
-(define-numerical-operation scm-sin :op #'sin :ex nil)
-(define-numerical-operation scm-cos :op #'cos :ex nil)
-(define-numerical-operation scm-tan :op #'tan :ex nil)
-(define-numerical-operation scm-asin :op #'asin :ex nil)
-(define-numerical-operation scm-acos :op #'acos :ex nil)
-(define-numerical-operation scm-atan :op #'atan :ex nil)
+(define-numerical-operation scm-exp :op #'exp)
+(define-numerical-operation scm-log :op #'log)
+(define-numerical-operation scm-sin :op #'sin)
+(define-numerical-operation scm-cos :op #'cos)
+(define-numerical-operation scm-tan :op #'tan)
+(define-numerical-operation scm-asin :op #'asin)
+(define-numerical-operation scm-acos :op #'acos)
+(define-numerical-operation scm-atan :op #'atan)
 
-(define-numerical-operation scm-sqrt :op #'sqrt :ex nil)
+(define-numerical-operation scm-sqrt :op #'sqrt)
 
 (defun exact-integer-sqrt (k)
   (let ((int (truncate (sqrt k))))
@@ -172,12 +162,12 @@
         (values 0 k)
         (values int (- k (* int int))))))
 
-(define-numerical-operation scm-exact-integer-sqrt :op #'exact-integer-sqrt :ex t)
+(define-numerical-operation scm-exact-integer-sqrt :op #'exact-integer-sqrt)
 
 (define-numerical-operation scm-expt :op #'expt)
 
 (define-numerical-operation scm-make-rectangular :op #'complex)
-(define-numerical-operation scm-make-polar :ex nil
+(define-numerical-operation scm-make-polar
     :op (lambda (z3 z4) (complex (* z3 (cos z4)) (* z3 (sin z4)))))
 (define-numerical-operation scm-real-part :op #'realpart)
 (define-numerical-operation scm-imag-part :op #'imagpart)
@@ -185,8 +175,8 @@
 (define-numerical-operation scm-angle
     :op (lambda (z) (atan (imagpart z) (realpart z))))
 
-(define-numerical-operation scm-exact->inexact :op #'float :ex nil)
-(define-numerical-operation scm-inexact->exact :op #'rational :ex t)
+(define-numerical-operation scm-exact->inexact :op #'float)
+(define-numerical-operation scm-inexact->exact :op #'rational)
 
 
 (defun number-to-string (num radix)
@@ -196,7 +186,7 @@
 
 (defgeneric scm-number->string (obj1 &optional obj2))
 (defmethod scm-number->string
-    ((num scm-number) &optional (radix (new 'scm-number :val 10 :ex t)))
+    ((num scm-number) &optional (radix (new 'scm-number :val 10)))
   (new 'scm-string
        :val (number-to-string (val num) (val radix))))
 
@@ -205,12 +195,8 @@
 (defun string-to-number (str radix)
   (read-from-string str))
 
-(defun string-of-exact-number-p (str)
-  (find "." str))
-
 (defgeneric scm-string->number (obj1 &optional obj2))
 (defmethod scm-string->number
-    ((str scm-string) &optional (radix (new 'scm-number :val 10 :ex t)))
+    ((str scm-string) &optional (radix (new 'scm-number :val 10)))
   (new 'scm-number
-       :val (string-to-number (val str) (val radix))
-       :ex (string-of-exact-number-p (val str))))
+       :val (string-to-number (val str) (val radix))))

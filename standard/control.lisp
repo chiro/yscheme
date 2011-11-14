@@ -60,7 +60,7 @@
     (dolist (list lists)
       (do ((args list (val-cdr args))
            (i 0 (1+ i)))
-          ((scm-truep (null? args)))
+          ((scm-truep (scm-null? args)))
         (push (val-car args) (elt arglists i))))
     (dolist (arglist arglists (nreverse ret-list))
       (push (scm-apply proc arglist) ret-list))

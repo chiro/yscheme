@@ -19,4 +19,4 @@
 (push *write-library* *scm-libraries*)
 
 (setf *interaction-environment*
-      (scm-scheme-report-environment (new 'scm-number :val 7 :ex t)))
+      (scm-scheme-report-environment (new 'scm-number :val 7)))

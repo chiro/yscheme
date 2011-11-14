@@ -9,19 +9,6 @@
                (:file "func")
                (:file "onlisp")
 
-               (:module parser
-                        :serial t
-                        :components ((:file "generic")
-                                     (:file "space")
-                                     (:file "comment")
-                                     (:file "identifier")
-                                     (:file "value")
-                                     (:file "number")
-                                     (:file "datum")
-                                     (:file "expression")
-                                     (:file "program")
-                                     (:file "parser")))
-
                (:module standard
                         :serial t
                         :components ((:file "equiv")
@@ -36,8 +23,20 @@
                                      (:file "control")
                                      (:file "eval")
                                      (:file "env")
-                                     (:file "io")
-                                     ))
+                                     (:file "io")))
+
+               (:module parser
+                        :serial t
+                        :components ((:file "generic")
+                                     (:file "space")
+                                     (:file "comment")
+                                     (:file "identifier")
+                                     (:file "value")
+                                     (:file "number")
+                                     (:file "datum")
+                                     (:file "expression")
+                                     (:file "program")
+                                     (:file "parser")))
 
                (:module structure
                         :serial t
@@ -68,6 +67,7 @@
                                      ))
 
                (:file "prepare")
+               (:file "repl")
                )
   :depends-on (:esrap :cl-unicode)
   )

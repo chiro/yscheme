@@ -8,7 +8,7 @@
 
 (defgeneric scm-make-vector (obj1 &optional obj2))
 (defmethod scm-make-vector
-    ((k scm-integer) &optional (fill (new 'scm-number :val 0 :ex t)))
+    ((k scm-integer) &optional (fill (new 'scm-number :val 0)))
   (new 'scm-vector
        :val (make-array (val k) :element-type 'vector :initial-element fill)))
 
@@ -30,7 +30,7 @@
 
 (defgeneric scm-vector->list (obj))
 (defmethod scm-vector->list ((vec scm-vector))
-  (apply scm-list
+  (apply #'scm-list
          (mapcar (lambda (o) o) (concatenate 'list (val vec)))))
 
 (defgeneric scm-list->vector (obj))

@@ -55,29 +55,29 @@
   (new 'scm-character-port
        :file file
        :direction :input
-       (open file :if-does-not-exists :error)))
+       :strm (open file :if-does-not-exist :error)))
 
 (defgeneric scm-open-binary-input-file (obj))
 (defmethod scm-open-binary-input-file ((file scm-string))
   (new 'scm-binary-port
        :file file
        :direction :input
-       (open file :element-type 'unsigned-byte :if-does-not-exists :error)))
+       :strm (open file :element-type 'unsigned-byte :if-does-not-exist :error)))
 
 (defgeneric scm-open-output-file (obj))
 (defmethod scm-open-output-file ((file scm-string))
   (new 'scm-character-port
        :file file
        :direction :output
-       (open file :direction :output :if-does-not-exists :error)))
+       :strm (open file :direction :output :if-does-not-exist :error)))
 
 (defgeneric scm-open-binary-output-file (obj))
 (defmethod scm-open-binary-output-file ((file scm-string))
   (new 'scm-binary-port
        :file file
        :direction :output
-       (open file :direction :output :element-type 'unsigned-byte
-             :if-does-not-exists :error)))
+       :strm (open file :direction :output :element-type 'unsigned-byte
+                   :if-does-not-exist :error)))
 
 (defgeneric scm-close-port (obj))
 (defmethod scm-close-port ((port scm-port))
@@ -104,11 +104,13 @@
 ;(defgeneric scm-get-output-bytevector (obj))
 
 
+;;; 要修正
 (defgeneric scm-read (&optional obj))
 (defmethod scm-read (&optional (port *current-input-port*))
-  (let ((str (val (scm-read-line port))))
-    (awhile (esrap::parse 'yscheme::datum str :junk-allowed t)
-      (setf str (mkstr str " " (val (scm-read-line port)))))))
+  (labels ((rec (str)
+             (or (parse-program str)
+                 (rec (mkstr str " " (val (scm-read-line port)))))))
+    (rec (val (scm-read-line port)))))
 
 (defgeneric scm-read-char (&optional obj))
 (defmethod scm-read-char (&optional (port *current-input-port*))
@@ -129,12 +131,12 @@
 (defgeneric scm-read-u8 (&optional obj))
 (defmethod scm-read-u8 (&optional (port *current-input-port*))
   (with-slots (strm buff) port
-    (new 'scm-number :val (or (pop buff) (read-byte strm nil +eof+)) :ex t)))
+    (new 'scm-number :val (or (pop buff) (read-byte strm nil +eof+)))))
 
 (defgeneric scm-peek-u8 (&optional obj))
 (defmethod scm-peek-u8 (&optional (port *current-input-port*))
   (with-slots (strm buff) port
-    (car (push (new 'scm-number :val (read-byte strm nil +eof+) :ex t)
+    (car (push (new 'scm-number :val (read-byte strm nil +eof+))
                buff))))
 
 ;(define-predicate scm-u8-ready? ((obj scm-binary-port))
@@ -146,7 +148,7 @@
            (byte (read-byte stream nil +eof+) (read-byte stream nil +eof+))
            (bytes (mklist peeked-value) (append1 bytes byte)))
           ((or (eq byte +eof+) (<= lim i))
-           (mapcar (lambda (n) (new 'scm-number :val n :ex t))
+           (mapcar (lambda (n) (new 'scm-number :val n))
                    bytes))))))
 
 (defgeneric scm-read-bytevector (obj1 &optional obj2))
@@ -175,7 +177,7 @@
                      (name sym))))
 
 (defun escape-char-to-string (char)
-  (if (cl-unicode:has-property char)
+  (if (cl-unicode:has-property char "ASCII")
       (string char)
       (mkstr "\\x" (format nil "~16R" (char-code char)) ";")))
 
@@ -184,162 +186,165 @@
 
 (defgeneric scm-write (obj1 &optional obj2))
 
-(defmethod scm-write ((obj scm-object) &optional (port *current-input-port*))
-  (princ obj (strm port)))
+(defmethod scm-write ((obj scm-object) &optional (port *current-output-port*))
+  (princ "#<undefined>" (strm port)) +undefined+)
+
+(defmethod scm-write ((obj scm-undefined) &optional (port *current-output-port*))
+  (princ "#<undefined>" (strm port)) +undefined+)
 
 
-(defmethod scm-write ((num scm-number) &optional (port *current-input-port*))
-  (princ (val num) (strm port)))
+(defmethod scm-write ((num scm-real) &optional (port *current-output-port*))
+  (princ (val num) (strm port)) +undefined+)
 
-(defmethod scm-write ((num scm-complex) &optional (port *current-input-port*))
+(defmethod scm-write ((num scm-complex) &optional (port *current-output-port*))
   (with-slots (val) num
     (let ((d (if (integerp (realpart val)) "~D~@Di" "~F~@Fi")))
-      (format (strm port) d (realpart val) (imagpart val)))))
+      (format (strm port) d (realpart val) (imagpart val)))
+    +undefined+))
 
 (defmethod scm-write
-    ((num scm-positive-infinity) &optional (port *current-input-port*))
-  (princ "+inf.0" (strm port)))
+    ((num scm-positive-infinity) &optional (port *current-output-port*))
+  (princ "+inf.0" (strm port)) +undefined+)
 
 (defmethod scm-write
-    ((num scm-negative-infinity) &optional (port *current-input-port*))
-  (princ "-inf.0" (strm port)))
+    ((num scm-negative-infinity) &optional (port *current-output-port*))
+  (princ "-inf.0" (strm port)) +undefined+)
 
-(defmethod scm-write ((num scm-nan) &optional (port *current-input-port*))
-  (princ "+nan.0" (strm port)))
-
-
-(defmethod scm-write ((bool scm-boolean) &optional (port *current-input-port*))
-  (princ (if (val bool) "#t" "#f") (strm port)))
-
-(defmethod scm-write ((sym scm-symbol) &optional (port *current-input-port*))
-  (princ (name (escape-symbol sym)) (strm port)))
-
-(defmethod scm-write ((char scm-character) &optional (port *current-input-port*))
-  (format (strm port) "~W" (val char)))
-
-(defmethod scm-write ((str scm-string) &optional (port *current-input-port*))
-  (format (strm port) "~W" (val str)))
+(defmethod scm-write ((num scm-nan) &optional (port *current-output-port*))
+  (princ "+nan.0" (strm port)) +undefined+)
 
 
-(defmethod scm-write ((obj scm-object) &optional (port *current-input-port*))
-  (write obj (strm port)))
+(defmethod scm-write ((bool scm-boolean) &optional (port *current-output-port*))
+  (princ (if (val bool) "#t" "#f") (strm port)) +undefined+)
 
-(defmethod scm-write ((obj self-evaluating) &optional (port *current-input-port*))
-  (write (val obj) (strm port)))
+(defmethod scm-write ((sym scm-symbol) &optional (port *current-output-port*))
+  (princ (name (escape-symbol sym)) (strm port)) +undefined+)
 
-(defmethod scm-write ((list scm-list) &optional (port *current-input-port*))
+(defmethod scm-write ((char scm-character) &optional (port *current-output-port*))
+  (format (strm port) "~W" (val char)) +undefined+)
+
+(defmethod scm-write ((str scm-string) &optional (port *current-output-port*))
+  (format (strm port) "~W" (val str)) +undefined+)
+
+
+(defmethod scm-write ((obj scm-object) &optional (port *current-output-port*))
+  (write obj :stream (strm port)) +undefined+)
+
+(defmethod scm-write ((obj self-evaluating) &optional (port *current-output-port*))
+  (write (val obj) :stream (strm port)) +undefined+)
+
+
+(defmethod scm-write ((list scm-list) &optional (port *current-output-port*))
   (with-slots (strm) port
     (princ "(" strm)
-    (do ((list list (val-cdr list)))
-        ((let ((ret (scm-truep (scm-null? list))))
-           (or ret (princ " " strm) ret))
-         (princ ")" strm) +undefined+)
-      (scm-write (val-car list) port))))
+    (let ((end (gensym)))
+      (do ((list list
+                 (let ((cdr-val (val-cdr list)))
+                   (cond ((and (scm-truep (scm-list? cdr-val))
+                               (scm-truep (scm-null? cdr-val)))
+                          end)
+                         ((scm-truep (scm-list? cdr-val))
+                          (and (princ " " strm) cdr-val))
+                         (t
+                          (progn (princ " . " strm)
+                                 (scm-write cdr-val port)
+                                 end))))))
+          ((eq list end) (princ ")" strm) +undefined+)
+        (scm-write (val-car list) port)))))
 
-(defmethod scm-write ((vec scm-vector) &optional (port *current-input-port*))
+(defmethod scm-write ((vec scm-vector) &optional (port *current-output-port*))
   (with-slots (strm) port
     (princ "#(" strm)
-    (do ((list (concatenate 'list (val vec)) (cdr list)))
-        ((let ((ret (null list)))
-           (or ret (princ " " strm) ret))
-         (princ ")" strm) +undefined+)
+    (do ((list (concatenate 'list (val vec))
+               (and (cdr list) (princ " " strm) (cdr list))))
+        ((null list) (princ ")" strm) +undefined+)
+      (scm-write (car list) port))))
+
+(defmethod scm-write ((vec scm-bytevector) &optional (port *current-output-port*))
+  (with-slots (strm) port
+    (princ "#u8(" strm)
+    (do ((list (concatenate 'list (val vec))
+               (and (cdr list) (princ " " strm) (cdr list))))
+        ((null list) (princ ")" strm) +undefined+)
       (scm-write (car list) port))))
 
 
 (defgeneric scm-display (obj1 &optional obj2))
 
-(defmethod scm-display ((obj scm-object) &optional (port *current-input-port*))
-  (princ obj (strm port)))
+(defmethod scm-display ((obj scm-object) &optional (port *current-output-port*))
+  (scm-write obj port) +undefined+)
 
 
-(defmethod scm-display ((num scm-number) &optional (port *current-input-port*))
-  (princ (val num) (strm port)))
+(defmethod scm-display ((char scm-character) &optional (port *current-output-port*))
+  (princ (val char) (strm port)) +undefined+)
 
-(defmethod scm-display ((num scm-complex) &optional (port *current-input-port*))
-  (with-slots (val) num
-    (let ((d (if (integerp (realpart val)) "~D~@Di" "~F~@Fi")))
-      (format (strm port) d (realpart val) (imagpart val)))))
-
-(defmethod scm-display
-    ((num scm-positive-infinity) &optional (port *current-input-port*))
-  (princ "+inf.0" (strm port)))
-
-(defmethod scm-display
-    ((num scm-negative-infinity) &optional (port *current-input-port*))
-  (princ "-inf.0" (strm port)))
-
-(defmethod scm-display ((num scm-nan) &optional (port *current-input-port*))
-  (princ "+nan.0" (strm port)))
+(defmethod scm-display ((str scm-string) &optional (port *current-output-port*))
+  (princ (val str) (strm port)) +undefined+)
 
 
-(defmethod scm-display ((bool scm-boolean) &optional (port *current-input-port*))
-  (princ (if (val bool) "#t" "#f") (strm port)))
-
-(defmethod scm-display ((sym scm-symbol) &optional (port *current-input-port*))
-  (princ (name sym) (strm port)))
-
-(defmethod scm-display ((char scm-character) &optional (port *current-input-port*))
-  (princ (val char) (strm port)))
-
-(defmethod scm-display ((str scm-string) &optional (port *current-input-port*))
-  (princ (val str) (strm port)))
-
-
-(defmethod scm-display ((list scm-list) &optional (port *current-input-port*))
+(defmethod scm-display ((list scm-list) &optional (port *current-output-port*))
   (with-slots (strm) port
     (princ "(" strm)
-    (do ((list list (val-cdr list)))
-        ((let ((ret (scm-truep (scm-null? list))))
-           (or ret (princ " " strm) ret))
-         (princ ")" strm) +undefined+)
-      (scm-display (val-car list) port))))
+    (let ((end (gensym)))
+      (do ((list list
+                 (let ((cdr-val (val-cdr list)))
+                   (cond ((and (scm-truep (scm-list? cdr-val))
+                               (scm-truep (scm-null? cdr-val)))
+                          end)
+                         ((scm-truep (scm-list? cdr-val))
+                          (and (princ " " strm) cdr-val))
+                         (t
+                          (progn (princ " . " strm)
+                                 (scm-display cdr-val port)
+                                 end))))))
+          ((eq list end) (princ ")" strm) +undefined+)
+        (scm-display (val-car list) port)))))
 
-(defmethod scm-display ((vec scm-vector) &optional (port *current-input-port*))
+(defmethod scm-display ((vec scm-vector) &optional (port *current-output-port*))
   (with-slots (strm) port
     (princ "#(" strm)
-    (do ((list (concatenate 'list (val vec)) (cdr list)))
-        ((let ((ret (null list)))
-           (or ret (princ " " strm) ret))
-         (princ ")" strm) +undefined+)
+    (do ((list (concatenate 'list (val vec))
+               (and (cdr list) (princ " " strm) (cdr list))))
+        ((null list) (princ ")" strm) +undefined+)
       (scm-display (car list) port))))
 
-(defmethod scm-display ((vec scm-bytevector) &optional (port *current-input-port*))
+(defmethod scm-display ((vec scm-bytevector) &optional (port *current-output-port*))
   (with-slots (strm) port
     (princ "#u8(" strm)
-    (do ((list (concatenate 'list (val vec)) (cdr list)))
-        ((let ((ret (null list)))
-           (or ret (princ " " strm) ret))
-         (princ ")" strm) +undefined+)
+    (do ((list (concatenate 'list (val vec))
+               (and (cdr list) (princ " " strm) (cdr list))))
+        ((null list) (princ ")" strm) +undefined+)
       (scm-display (car list) port))))
 
 
 (defgeneric scm-newline (&optional obj))
-(defmethod scm-newline (&optional (port *current-input-port*))
-  (princ #\newline (strm port)))
+(defmethod scm-newline (&optional (port *current-output-port*))
+  (princ #\newline (strm port)) +undefined+)
 
 (defgeneric scm-write-char (obj1 &optional obj2))
-(defmethod scm-write-char ((char scm-character) &optional (port *current-input-port*))
+(defmethod scm-write-char ((char scm-character) &optional (port *current-output-port*))
   (scm-write char port))
 
 (defgeneric scm-write-u8 (obj1 &optional obj2))
-(defmethod scm-write-u8 ((byte scm-integer) &optional (port *current-input-port*))
+(defmethod scm-write-u8 ((byte scm-integer) &optional (port *current-output-port*))
   (write-byte (val byte) (strm port)))
 
 (defgeneric scm-write-bytevector (obj1 &optional obj2))
 (defmethod scm-write-bytevector
-    ((bytevec scm-bytevector) &optional (port *current-input-port*))
+    ((bytevec scm-bytevector) &optional (port *current-output-port*))
   (dolist (byte (concatenate 'list (val bytevec)))
     (scm-write-u8 (val byte) (strm port))))
 
 (defgeneric scm-write-partial-bytevector (obj1 obj2 obj3 &optional obj4))
 (defmethod scm-write-partial-bytevector
     ((bytevec scm-bytevector) (start scm-integer) (end scm-integer)
-     &optional (port *current-input-port*))
+     &optional (port *current-output-port*))
   (dolist (byte (subseq (concatenate 'list (val bytevec)) (val start) (val end)))
     (scm-write-u8 (val byte) (strm port))))
 
 (defgeneric scm-flush-output-port (&optional port))
-(defmethod scm-flush-output-port (&optional (port *current-input-port*))
+(defmethod scm-flush-output-port (&optional (port *current-output-port*))
+  (declare (ignorable port))
   +true+)
 
 
@@ -347,6 +352,4 @@
 
 (defgeneric scm-exit (&optional obj))
 (defmethod scm-exit (&optional (obj +true+))
-  (if (scm-truep obj)
-      (sb-ext:quit)
-      (sb-ext:quit :unix-status 1)))
+  (throw 'exit obj))
