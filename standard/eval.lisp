@@ -7,7 +7,7 @@
 (defmethod scm-eval ((exp self-evaluating) env)
   exp)
 
-(defmethod scm-eval ((obj list) env) ; multiple-values
+(defmethod scm-eval ((obj list) env) ; multiple-values ???
   (scm-eval (car obj) env))
 
 (defmethod scm-eval :around (obj env)

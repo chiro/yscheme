@@ -240,10 +240,9 @@
     (let ((end (gensym)))
       (do ((list list
                  (let ((cdr-val (val-cdr list)))
-                   (cond ((and (scm-truep (scm-list? cdr-val))
-                               (scm-truep (scm-null? cdr-val)))
+                   (cond ((scm-truep (scm-null? cdr-val))
                           end)
-                         ((scm-truep (scm-list? cdr-val))
+                         ((scm-truep (scm-pair? cdr-val))
                           (and (princ " " strm) cdr-val))
                          (t
                           (progn (princ " . " strm)
@@ -274,7 +273,6 @@
 (defmethod scm-display ((obj scm-object) &optional (port *current-output-port*))
   (scm-write obj port) +undefined+)
 
-
 (defmethod scm-display ((char scm-character) &optional (port *current-output-port*))
   (princ (val char) (strm port)) +undefined+)
 
@@ -288,10 +286,9 @@
     (let ((end (gensym)))
       (do ((list list
                  (let ((cdr-val (val-cdr list)))
-                   (cond ((and (scm-truep (scm-list? cdr-val))
-                               (scm-truep (scm-null? cdr-val)))
+                   (cond ((scm-truep (scm-null? cdr-val))
                           end)
-                         ((scm-truep (scm-list? cdr-val))
+                         ((scm-truep (scm-pair? cdr-val))
                           (and (princ " " strm) cdr-val))
                          (t
                           (progn (princ " . " strm)
