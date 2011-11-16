@@ -20,7 +20,7 @@
   )
 
 (esrap:defrule yscheme::nested-comment
-    (esrap::and "#|" comment_text (esrap::* comment_cont) "|#")
+    (esrap::and "#|" comment-text (esrap::* comment-cont) "|#")
   (:destructure (q1 ctext ccont q2)
                 (flatten (cons ctext ccont)))
   )

@@ -14,5 +14,11 @@
                                    (flatten (cdr lst))))
         (t (cons (car lst) (flatten (cdr lst))))))
 
-
-
+(defmacro scase ((keyform &key test) &rest cases)
+  (if (null cases)
+      nil
+      `(if (if ,test
+               (funcall ,test ,keyform ,(caar cases))
+               (eql ,keyform ,(caar cases)))
+           (progn ,@(cdar cases))
+           (scase (,keyform ,test) ,@(cdr cases)))))

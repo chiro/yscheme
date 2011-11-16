@@ -104,12 +104,12 @@
 ;(defgeneric scm-get-output-bytevector (obj))
 
 
-;;; 要修正
 (defgeneric scm-read (&optional obj))
 (defmethod scm-read (&optional (port *current-input-port*))
   (labels ((rec (str)
-             (or (parse-program str)
-                 (rec (mkstr str " " (val (scm-read-line port)))))))
+             (or (aand (possible-datum-p (concatenate 'list str))
+                       (parse-program str :end it :junk-allowed t))
+                 (rec (mkstr str #\Newline (val (scm-read-line port)))))))
     (rec (val (scm-read-line port)))))
 
 (defgeneric scm-read-char (&optional obj))
@@ -191,6 +191,12 @@
 
 (defmethod scm-write ((obj scm-undefined) &optional (port *current-output-port*))
   (princ "#<undefined>" (strm port)) +undefined+)
+
+(defmethod scm-write ((proc primitive-procedure) &optional (port *current-output-port*))
+  (format (strm port) "#<primitive-procedure>"))
+
+(defmethod scm-write ((proc compound-procedure) &optional (port *current-output-port*))
+  (format (strm port) "#<closure>"))
 
 
 (defmethod scm-write ((num scm-real) &optional (port *current-output-port*))

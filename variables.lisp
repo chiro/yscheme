@@ -66,8 +66,12 @@
 (defclass variable-definition (definition)
   ((val :accessor val :initarg :val)))                  ; scm-form
 
+(defclass scm-parameters (scm-form)
+  ((syms :accessor syms :initarg :syms :initform nil)   ; list of scm-symbols
+   (rst ::accessor rst :initarg :rst :initform nil)))   ; list of scm-symbol
+
 (defclass function-definition (definition)
-  ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
+  ((parms :accessor parms :initarg :parms)              ; list of scm-parameters
    (body :accessor body :initarg :body)))               ; list of scm-form
 
 
@@ -85,7 +89,7 @@
 
 (defclass record-type-const (scm-form)
   ((sym :accessor sym :initarg :sym)                    ; scm-symbol
-   (parms :accessor parms :initarg :parms)))            ; list of scm-symbol
+   (parms :accessor parms :initarg :parms)))            ; list of scm-parameters
 
 (defclass record-type-field (scm-form)
   ((sym :accessor sym :initarg :sym)                    ; scm-symbol
@@ -231,7 +235,7 @@
   ((func :accessor func :initarg :func)))               ; cl function
 
 (defclass compound-procedure (procedure)
-  ((parms :accessor parms :initarg :parms)              ; list of scm-symbol
+  ((parms :accessor parms :initarg :parms)              ; list of scm-parameters
    (body :accessor body :initarg :body)
    (env :accessor env :initarg :env)))
 

@@ -14,7 +14,7 @@
        :func (lambda (&rest args)
                (new 'record-type
                     :name (name sym)
-                    :val (pairlis (name parms) args)))))
+                    :val (pairlis (mapcar #'name (syms parms)) args)))))
 
 (defun make-record-type-predicate (sym)
   (new 'primitive-procedure
@@ -27,7 +27,7 @@
 
 (defun make-record-type-modifier (sym)
   (new 'primitive-procedure
-       :func (lambda (rec val) (setf (assoc (name sym) (val rec)) val))))
+       :func (lambda (rec val) (setf (cdr (assoc (name sym) (val rec))) val))))
 
 
 (defmethod scm-eval ((recdef record-type-definition) env)
@@ -40,7 +40,7 @@
               diff))
       (dolist (field fields)
         (with-slots (sym access modify) field
-          (push (cons (name access) (make-record-accessor sym)) diff)
+          (push (cons (name access) (make-record-type-accessor sym)) diff)
           (when modify
-            (push (cons (name modify) (make-record-modifier sym)) diff))))
+            (push (cons (name modify) (make-record-type-modifier sym)) diff))))
       (push diff (cdr (last env))))))

@@ -43,6 +43,7 @@
 ;;; 4.1.4. Procedures
 
 (defmethod scm-eval ((proc procedure) env)
+  (setf (env proc) env)
   proc)
 
 
@@ -103,6 +104,7 @@
           (scm-apply (car exps) (list keyval))))))
 
 (defmethod scm-clause-eval ((clause case-else-clause) env &key keyval)
+  (declare (ignorable keyval))
   (call-next-method))
 
 (defmethod scm-clause-eval ((clause case-else-clause-with-proc) env &key keyval)

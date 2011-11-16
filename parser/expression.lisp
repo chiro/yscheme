@@ -69,7 +69,10 @@
                 "lambda" intertoken_space
                 formals intertoken_space
                 body intertoken_space
-                ")"))
+                ")")
+  (:destructure (sp1 lp sp2 lbd sp3 frm sp4 bdy sp5 rp)
+    (make-instance 'compound-procedure
+                   :parms frm :body bdy)))
 
 (esrap::defrule formals
     (esrap::or (esrap::and intertoken_space
@@ -82,9 +85,14 @@
                            (esrap::+ scm_variable) intertoken_space
                            "." intertoken_space
                            scm_variable intertoken_space
-                           ")")
-               )
-)
+                           ")"))
+  (:lambda (data)
+    (cond ((= (length data) 6)
+           (make-instance 'scm-parameters :syms (fourth data)))
+          ((= (length data) 2)
+           (make-instance 'scm-parameters :rst (second data)))
+          ((= (length data) 10)
+           (make-instance 'scm-parameters :syms (fourth data) :rst (seventh data))))))
 
 (esrap::defrule body
     (esrap::and (esrap::* syntax_definition) intertoken_space

@@ -65,16 +65,17 @@
                (esrap::and uinteger2 "/" uinteger2))
   (:lambda (data)
     (cond ((eql (car data) :uinteger2)
-           (list :ureal2 (read-from-string (cadr data))))
+           (list :ureal2 (read-from-string (mkstr "#b" (cadr data)))))
           (t
-           (list :ureal2 (read-from-string (mkstr (cadr (car data))
+           (list :ureal2 (read-from-string (mkstr "#b"
+                                                  (cadr (car data))
                                                   (cadr data)
                                                   (cadr (caddr data)))))))))
 
 (esrap::defrule uinteger2
     (esrap::and (esrap:+ digit2) (esrap:* "#"))
   (:destructure (digs shs)
-    (list :uinteger2 (cadr digs))))
+    (list :uinteger2 (charl-to-str digs))))
 
 (esrap::defrule prefix2
     (esrap::or (esrap::and radix2 exactness)
@@ -250,16 +251,17 @@
     (cond ((eql (car data) :decimal8)
            (list :ureal8 (cadr data)))
           ((eql (car data) :uinteger8)
-           (list :ureal8 (read-from-string (cadr data))))
+           (list :ureal8 (read-from-string (mkstr "#o" (cadr data)))))
           (t
-           (list :ureal8 (read-from-string (mkstr (cadr (car data))
+           (list :ureal8 (read-from-string (mkstr "#o"
+                                                  (cadr (car data))
                                                   (cadr data)
                                                   (cadr (caddr data)))))))))
 
 (esrap::defrule uinteger8
     (esrap::and (esrap:+ digit8) (esrap:* "#"))
   (:destructure (digs shs)
-    (list :uinteger8 (cadr digs))))
+    (list :uinteger8 (charl-to-str digs))))
 
 (esrap::defrule prefix8
     (esrap::or (esrap::and radix8 exactness)
@@ -326,16 +328,17 @@
     (cond ((eql (car data) :decimal16)
            (list :ureal16 (cadr data)))
           ((eql (car data) :uinteger16)
-           (list :ureal16 (read-from-string (cadr data))))
+           (list :ureal16 (read-from-string (mkstr "#x" (cadr data)))))
           (t
-           (list :ureal16 (read-from-string (mkstr (cadr (car data))
+           (list :ureal16 (read-from-string (mkstr "#x"
+                                                   (cadr (car data))
                                                    (cadr data)
                                                    (cadr (caddr data)))))))))
 
 (esrap::defrule uinteger16
     (esrap::and (esrap:+ digit16) (esrap:* "#"))
   (:destructure (digs shs)
-    (list :uinteger16 (cadr digs))))
+    (list :uinteger16 (charl-to-str digs))))
 
 (esrap::defrule prefix16
     (esrap::or (esrap::and radix16 exactness)

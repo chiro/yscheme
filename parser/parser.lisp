@@ -13,8 +13,9 @@
     (let ((str (read-stream-to-string stream)))
       (esrap::parse comp str :junk-allowed t))))
 
-(defun parse-program (str)
-  (car (esrap::parse 'program (mkstr str " ") :junk-allowed t)))
+(defun parse-program (str &key (start 0) end junk-allowed)
+  (let ((str (subseq str start end)))
+    (car (esrap::parse 'program (mkstr str " ") :junk-allowed junk-allowed))))
 
 (defun parse-program-from-file (filepath)
   (with-open-file (stream filepath)

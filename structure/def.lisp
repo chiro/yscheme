@@ -4,9 +4,6 @@
 (in-package :yscheme)
 
 
-;;; いずれまとめたい
-
-
 (defmethod scm-eval ((vardef variable-definition) env)
   (with-slots (sym val) vardef
     (let ((val (scm-eval val env)))
@@ -22,5 +19,5 @@
                                (new 'begin :exps body))
                      :env env)))
       (push (list (cons (name sym) proc)) (cdr (last env)))
-      proc)))
+      sym)))
 
