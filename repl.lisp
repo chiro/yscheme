@@ -1,7 +1,7 @@
 (in-package :yscheme)
 
 
-(defun read-eval-print-loop ()
+(defun %read-eval-print-loop ()
   (labels ((rec ()
              (princ "> ")
              (setf *eval-count* 0)
@@ -13,10 +13,16 @@
                         (dolist (v value) (scm-display v) (princ #\Newline)))
                        (t (scm-display value) (princ #\Newline)))
                  (rec)))))
-    (format t "YSCHEME PROTOTYPE 0.0.1~%~%")
     (if (scm-truep (catch 'exit (rec)))
         (sb-ext:quit)
         (sb-ext:quit :unix-status 1))))
+
+(defun repl ()
+  (format t "YSCHEME PROTOTYPE 0.0.1~%~%")
+  (loop
+    (handler-case (%read-eval-print-loop)
+      (error ()
+        (format t "ERROR: invalid input~%")))))
 
 
 (defmacro flags-acond (&rest clauses)
