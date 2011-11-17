@@ -98,9 +98,9 @@
     (esrap::and (esrap::* syntax_definition) intertoken_space
                 (esrap::* definition) intertoken_space
                 sequence)
-  (:destructure (sdef s1 def s2 sq)
-                sq) ;; TODO
-;;  (:lambda (data) (remove-if #'null data))
+;;  (:destructure (sdef s1 def s2 sq)
+;;                sq) ;; TODO
+  (:lambda (data) (remove-if #'null data))
 )
 
 ;; left recursive!!
