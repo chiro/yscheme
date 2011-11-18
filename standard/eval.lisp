@@ -4,6 +4,9 @@
 (defgeneric scm-eval (exp env)
   (:documentation ""))
 
+(defmethod scm-eval ((exp scm-nil) env)
+  exp)
+
 (defmethod scm-eval ((exp self-evaluating) env)
   exp)
 
@@ -166,19 +169,17 @@
            (mapcar (lambda (bind)
                      (cons (name (sym bind)) (scm-eval (init bind) env)))
                    binds)))
-      (scm-eval (new 'begin :exps body)
-                (append1 env new-frame)))))
+      (scm-eval body (append1 env new-frame)))))
 
 (defmethod scm-eval ((exp let*-exp) env)
   (with-slots (binds body) exp
-    (let* ((new-frame nil))
+    (let ((new-frame nil))
       (dolist (bind binds)
         (setf new-frame
               (acons (name (sym bind))
                      (scm-eval (init bind) (append1 env new-frame))
                      new-frame)))
-      (scm-eval (new 'begin :exps body)
-                (append1 env new-frame)))))
+      (scm-eval body (append1 env new-frame)))))
 
 
 (defmethod scm-eval ((exp letrec-exp) env)
@@ -190,8 +191,7 @@
       (dolist (bind binds)
         (setf (cdr (assoc-frame (sym bind) new-frame))
               (scm-eval (init bind) env)))
-      (scm-eval (new 'begin :exps body)
-                (append1 env new-frame)))))
+      (scm-eval body (append1 env new-frame)))))
 
 (defmethod scm-eval ((exp letrec*-exp) env)
   (with-slots (binds body) exp
@@ -202,8 +202,7 @@
       (dolist (bind binds)
         (setf (cdr (assoc-frame (sym bind) new-frame))
               (scm-eval (init bind) (append1 env new-frame))))
-      (scm-eval (new 'begin :exps body)
-                (append1 env new-frame)))))
+      (scm-eval body (append1 env new-frame)))))
 
 
 (defmethod scm-eval ((exp let-values-exp) env)
@@ -215,7 +214,7 @@
                       (mapcar (lambda (sym val) (cons (name sym) val))
                               (syms mvbind)
                               (scm-eval (init mvbind) env)))))
-      (scm-eval (new 'begin :exps body) (append1 env new-frame)))))
+      (scm-eval body (append1 env new-frame)))))
 
 (defmethod scm-eval ((exp let*-values-exp) env)
   (with-slots (binds body) exp
@@ -226,12 +225,7 @@
                       (mapcar (lambda (sym val) (cons (name sym) val))
                               (syms mvbind)
                               (scm-eval (init mvbind) (cons new-frame env))))))
-      (scm-eval (new 'begin :exps body) (append1 env new-frame)))))
-
-
-
-
-
+      (scm-eval body (append1 env new-frame)))))
 
 
 ;;; 4.2.3. Sequencing

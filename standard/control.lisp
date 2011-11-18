@@ -20,9 +20,9 @@
       (awhen (rst parms)
         (push (cons it (scm-general-list
                         (new 'scm-nil)
-                        (nthcdr (- (length args) (syms parms)) args)))
+                        (nthcdr (- (length args) (length (syms parms))) args)))
               new-frame))
-      (scm-eval body (cons new-frame env)))))
+      (scm-eval body (append1 env new-frame)))))
 
 
 (defgeneric scm-map (obj1 &rest objs))
@@ -37,7 +37,7 @@
           ((scm-truep (scm-null? args)))
         (push (val-car args) (elt arglists i))))
     (apply #'scm-list
-           (dolist (arglist arglists (nreverse ret-list))
+           (dolist (arglist arglists (reverse ret-list))
              (push (scm-apply proc arglist) ret-list)))))
 
 (defgeneric scm-string-map (obj1 &rest objs))
@@ -67,7 +67,7 @@
            (i 0 (1+ i)))
           ((scm-truep (scm-null? args)))
         (push (val-car args) (elt arglists i))))
-    (dolist (arglist arglists (nreverse ret-list))
+    (dolist (arglist arglists (reverse ret-list))
       (push (scm-apply proc arglist) ret-list))
     +undefined+))
 

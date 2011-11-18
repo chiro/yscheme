@@ -107,9 +107,14 @@
 (defgeneric scm-read (&optional obj))
 (defmethod scm-read (&optional (port *current-input-port*))
   (labels ((rec (str)
-             (or (aand (possible-datum-p (concatenate 'list str))
-                       (parse-program str :end it :junk-allowed t))
-                 (rec (mkstr str #\Newline (val (scm-read-line port)))))))
+             (aif (possible-datum-p (concatenate 'list str))
+                  (or (if (numberp it)
+                          (or (parse-program str :end it :junk-allowed t)
+                              (esrap::parse 'yscheme::datum str :junk-allowed t))
+                          (or (parse-program str :junk-allowed t)
+                              (esrap::parse 'yscheme::datum str)))
+                      (rec (mkstr str #\Newline (val (scm-read-line port)))))
+                  (error "Invalid input"))))
     (rec (val (scm-read-line port)))))
 
 (defgeneric scm-read-char (&optional obj))
@@ -185,6 +190,9 @@
 ;; write, display ともに現状では止まらない可能性あり(shared structure)
 
 (defgeneric scm-write (obj1 &optional obj2))
+
+(defmethod scm-write ((list scm-nil) &optional (port *current-output-port*))
+  (princ "()" (strm port)))
 
 (defmethod scm-write ((obj scm-object) &optional (port *current-output-port*))
   (princ "#<undefined>" (strm port)) +undefined+)

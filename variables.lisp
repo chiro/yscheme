@@ -268,13 +268,13 @@
 (defclass cond-else-clause (clause) ())
 
 (defclass case-clause (clause)
-  ((datums :accessor datum :initarg :datum)))
+  ((datums :accessor datums :initarg :datums)))
 
 (defclass case-clause-with-proc (case-clause) ())
 
 (defclass case-else-clause (clause) ())
 
-(defclass case-else-clause-with-proc (else-clause) ())
+(defclass case-else-clause-with-proc (case-else-clause) ())
 
 
 (defclass cond-exp (scm-form)

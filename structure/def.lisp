@@ -13,11 +13,7 @@
 (defmethod scm-eval ((fundef function-definition) env)
   (with-slots (sym parms body) fundef
     (let ((proc (new 'compound-procedure
-                     :parms parms
-                     :body (if (null (cdr body))
-                               (car body)
-                               (new 'begin :exps body))
-                     :env env)))
+                     :parms parms :body body :env env)))
       (push (list (cons (name sym) proc)) (cdr (last env)))
       sym)))
 

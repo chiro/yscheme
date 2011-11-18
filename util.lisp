@@ -21,4 +21,4 @@
                (funcall ,test ,keyform ,(caar cases))
                (eql ,keyform ,(caar cases)))
            (progn ,@(cdar cases))
-           (scase (,keyform ,test) ,@(cdr cases)))))
+           (scase (,keyform :test ,test) ,@(cdr cases)))))

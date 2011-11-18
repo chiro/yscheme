@@ -35,6 +35,8 @@
                                      (:file "number")
                                      (:file "datum")
                                      (:file "expression")
+                                     (:file "derived")
+                                     (:file "empty")
                                      (:file "program")
                                      (:file "parser")))
 

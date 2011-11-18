@@ -9,9 +9,10 @@
                  lambda_expression
                  conditional
                  assignment
-                 ;; derived_expression
+                 derived_expression
                  ;; macro_use
                  ;; macro_block
+                 empty-sequence
                  )
                 intertoken_space
                 )
@@ -98,9 +99,10 @@
     (esrap::and (esrap::* syntax_definition) intertoken_space
                 (esrap::* definition) intertoken_space
                 sequence)
-;;  (:destructure (sdef s1 def s2 sq)
-;;                sq) ;; TODO
-  (:lambda (data) (remove-if #'null data))
+  (:destructure (sdef s1 def s2 sq) ;;TODO
+    (if (null (cdr sq))
+        (car sq)
+        (make-instance 'begin :exps sq)))
 )
 
 ;; left recursive!!
