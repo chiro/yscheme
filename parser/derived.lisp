@@ -49,62 +49,81 @@
                            intertoken_space "(" intertoken_space
                            (esrap::* mv_binding_spec) intertoken_space ")"
                            intertoken_space body ")" intertoken_space)
+               (esrap::and intertoken_space "(" intertoken_space "begin"
+                           sequence ")" intertoken_space)
+               (esrap::and intertoken_space "(" intertoken_space "do" intertoken_space
+                           "(" (esrap::* iteration_spec) ")" intertoken_space
+                           "(" test (esrap::? do_result) intertoken_space ")"
+                           intertoken_space (esrap::* command) ")" intertoken_space)
                ;;
-               )
-  (:lambda (data)
-    (scase ((fourth data) :test #'string=)
-           ("cond" (if (= (length data) 8)
-                       (make-instance 'cond-exp :clauses (sixth data))
-                       (make-instance 'cond-exp
-                                      :clauses (list (sixth data)
-                                                     (make-instance
-                                                      'cond-else-clause
-                                                      :exps (nth 11 data))))))
-           ("case" (case (length data)
-                     (8  (make-instance 'case-exp :clauses (sixth data)))
-                     (13 (make-instance 'case-exp
-                                        :clauses (list (sixth data)
-                                                       (make-instance
-                                                        'cond-else-clause
-                                                        :datums (fifth data)
-                                                        :exps (nth 11 data)))))
-                     (15 (make-instance 'case-exp
-                                        :clauses (list (sixth data)
-                                                       (make-instance
-                                                        'case-else-clause-with-proc
-                                                        :datums (fifth data)
-                                                        :exps (first (tenth data))))))))
-           ("and"             (make-instance 'and-exp :exps (sixth data)))
-           ("or"              (make-instance 'or-exp :exps (sixth data)))
-           ("when"            (make-instance 'when-exp
-                                             :test (sixth data)
-                                             :exps (cons (seventh data) (eighth data))))
-           ("unless"          (make-instance 'unless-exp
-                                             :test (sixth data)
-                                             :exps (cons (seventh data) (eighth data))))
-           ("let"         (if (= (length (fifth data)) 2)
-                              (make-instance 'named-let-exp
-                                             :sym (third (fifth data))
-                                             :binds (ninth data)
-                                             :body (nth 12 data))
-                              (make-instance 'let-exp
-                                             :binds (ninth data)
-                                             :body (nth 12 data))))
-           ("let*"            (make-instance 'let*-exp
-                                             :binds (eighth data)
-                                             :body (nth 11 data)))
-           ("letrec"          (make-instance 'letrec-exp
-                                             :binds (eighth data)
-                                             :body (nth 11 data)))
-           ("letrec*"         (make-instance 'letrec*-exp
-                                             :binds (eighth data)
-                                             :body (nth 11 data)))
-           ("let-values"      (make-instance 'let-values-exp
-                                             :binds (eighth data)
-                                             :body (nth 11 data)))
-           ("let*-values"     (make-instance 'let*-values-exp
-                                             :binds (eighth data)
-                                             :body (nth 11 data)))
+                )
+   (:lambda (data)
+     (scase ((fourth data) :test #'string=)
+       ("cond" (if (= (length data) 8)
+                   (make-instance 'cond-exp :clauses (sixth data))
+                   (make-instance 'cond-exp
+                                  :clauses (list (sixth data)
+                                                 (make-instance
+                                                  'cond-else-clause
+                                                  :exps (nth 11 data))))))
+       ("case" (case (length data)
+                 (8  (make-instance 'case-exp :clauses (sixth data)))
+                 (13 (make-instance 'case-exp
+                                    :clauses (list (sixth data)
+                                                   (make-instance
+                                                    'cond-else-clause
+                                                    :datums (fifth data)
+                                                    :exps (nth 11 data)))))
+                 (15 (make-instance 'case-exp
+                                    :clauses (list (sixth data)
+                                                   (make-instance
+                                                    'case-else-clause-with-proc
+                                                    :datums (fifth data)
+                                                    :exps (first (tenth data))))))))
+       ("and"            (make-instance 'and-exp :exps (sixth data)))
+       ("or"             (make-instance 'or-exp :exps (sixth data)))
+       ("when"           (make-instance 'when-exp
+                                        :test (sixth data)
+                                        :exps (cons (seventh data) (eighth data))))
+       ("unless"        (make-instance 'unless-exp
+                                       :test (sixth data)
+                                       :exps (cons (seventh data) (eighth data))))
+       ("let"         (if (= (length (fifth data)) 2)
+                          (make-instance 'named-let-exp
+                                              :sym (second (fifth data))
+                                              :binds (ninth data)
+                                              :body (nth 12 data))
+                          (make-instance 'let-exp
+                                         :binds (ninth data)
+                                         :body (nth 12 data))))
+       ("let*"            (make-instance 'let*-exp
+                                         :binds (eighth data)
+                                         :body (nth 11 data)))
+       ("letrec"          (make-instance 'letrec-exp
+                                         :binds (eighth data)
+                                         :body (nth 11 data)))
+       ("letrec*"         (make-instance 'letrec*-exp
+                                         :binds (eighth data)
+                                         :body (nth 11 data)))
+       ("let-values"      (make-instance 'let-values-exp
+                                         :binds (eighth data)
+                                         :body (nth 11 data)))
+       ("let*-values"     (make-instance 'let*-values-exp
+                                         :binds (eighth data)
+                                         :body (nth 11 data)))
+       ("begin"           (make-instance 'begin :exps (fifth data)))
+       ("do"              (make-instance 'do-exp
+                                         :binds (seventh data)
+                                         :end (make-instance 'do-end-clause
+                                                             :test (nth 10 data)
+                                                             :exps (nth 11 data))
+                                         :body (case (length (nth 15 data))
+                                                 (0 nil)
+                                                 (1 (car (nth 15 data)))
+                                                 (t (make-instance
+                                                     'begin
+                                                     :exps (nth 15 data))))))
+       ;;
 )))
 
 (esrap::defrule yscheme::cond_clause
@@ -145,12 +164,10 @@
     (make-instance 'mv-binding :syms (syms fm) :init ex)))
 
 (esrap::defrule yscheme::iteration_spec
-    (esrap::or (esrap::and intertoken_space "(" identifier intertoken_space init
-                           intertoken_space step ")" intertoken_space)
-               (esrap::and intertoken_space "(" identifier intertoken_space init ")"
-                           intertoken_space))
-
-)
+    (esrap::and intertoken_space "(" intertoken_space identifier init
+                (esrap::? step) ")" intertoken_space)
+  (:destructure (s1 p1 s2 id ini st p2 s3)
+    (make-instance 'step-binding :sym id :init ini :next st)))
 
 (esrap::defrule yscheme::case-lambda_clause
     (esrap::and intertoken_space "(" formals intertoken_space body ")")
@@ -160,9 +177,7 @@
 
 (esrap::defrule yscheme::step expression)
 
-(esrap::defrule yscheme::do_result
-    (esrap::* sequence)
-)
+(esrap::defrule yscheme::do_result sequence)
 
 (esrap::defrule yscheme::macro_use
     (esrap::and intertoken_space "(" intertoken_space keyword intertoken_space

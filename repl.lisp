@@ -1,8 +1,12 @@
 (In-package :yscheme)
 
 
+(defvar *previous-interaction-environment* nil)
+
 (defun %read-eval-print-loop ()
   (labels ((rec ()
+             (setf *previous-interaction-environment*
+                   (copy-tree *interaction-environment*))
              (princ "> ")
              (setf *eval-count* 0)
              (let ((input (scm-read)))
@@ -19,10 +23,12 @@
 
 (defun repl ()
   (format t "YSCHEME(PROTOTYPE) 0.0.1~%~%")
-  (loop
+  (while t
     (handler-case (%read-eval-print-loop)
       (error ()
-        (format t "ERROR: invalid input~%")))))
+        (format t "ERROR: invalid input~%")
+        (setf *interaction-environment*
+              (copy-tree *previous-interaction-environment*))))))
 
 
 (defmacro flags-acond (&rest clauses)

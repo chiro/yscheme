@@ -247,11 +247,10 @@
     (let ((new-frame
            (mapcar (lambda (bind)
                      (cons (name (sym bind)) (scm-eval (init bind) env)))
-                   binds))
-          (begin (new 'begin :exps body)))
+                   binds)))
       (labels ((rec (env)
                  (or (scm-clause-eval end env)
-                     (progn (scm-eval begin env)
+                     (progn (scm-eval body env)
                             (let ((new-frame
                                    (mapcar (lambda (bind)
                                              (cons (name (sym bind))
@@ -264,16 +263,15 @@
 (defmethod scm-eval ((exp named-let-exp) env)
   (with-slots (sym binds body) exp
     (let* ((proc (new 'compound-procedure
-                      :parms (mapcar #'sym binds)
-                      :body (if (null (cdr body))
-                                (car body)
-                                (new 'begin :exps body))
+                      :parms (new 'scm-parameters :syms (mapcar #'sym binds))
+                      :body body
                       :env env))
            (new-frame (list (cons (name sym) proc))))
+      (push (mapcar #'sym binds) *a)
       (setf (env proc) (append1 env new-frame))
       (scm-apply proc
-                 (mapcar (lambda (e) (scm-eval e env))
-                         (mapcar #'cons (sym binds) (init binds)))))))
+                 (mapcar (lambda (b) (scm-eval (init b) env))
+                         binds)))))
 
 
 ;;; 4.2.5. Delayed evaluation

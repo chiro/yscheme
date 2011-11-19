@@ -38,7 +38,9 @@
                                      (:file "derived")
                                      (:file "empty")
                                      (:file "program")
-                                     (:file "parser")))
+                                     (:file "library")
+                                     (:file "parser")
+                                     ))
 
                (:module structure
                         :serial t
@@ -48,7 +50,7 @@
                                      (:file "libdef")
                                      ))
 
-               (:module library
+               (:module librarys
                         :serial t
                         :components ((:file "base")
                                      (:file "case-lambda")

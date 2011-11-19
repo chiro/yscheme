@@ -103,6 +103,13 @@
    (fields :accessor fields :initarg :fields)))         ; record-type-field
 
 
+
+
+
+
+
+
+
 ;; 5.5 Libraries
 
 (defclass rename-pair (scm-form)
@@ -126,9 +133,9 @@
   ((im-set :accessor im-set :initarg :im-set)
    (sym :accessor sym :initarg :sym)))
 
-(defclass import-rename (scm-import-set rename-pair)
-  ((im-set :accessor im-set :initarg :im-set)))
-
+(defclass import-rename (scm-import-set)
+  ((im-set :accessor im-set :initarg :im-set)
+   (exps :accessor exps :initarg :exps)))
 
 (defclass cond-expand-clause (clause)
   ((req :accessor req :initarg :req)))
@@ -143,10 +150,12 @@
 (defclass required-library (feature-requirement)
   ((syms :accessor syms :initarg :syms)))               ; list of scm-symbol
 
+(defclass required-not (feature-requirement)
+  ((req :accessor req :initarg :req)))
+
 
 (defclass library-export (scm-form)
-  ((syms :accessor syms :initarg :syms)                 ; list of scm-symbol
-   (renames :accessor renames :initarg :renames)))      ; list of rename-pair
+  ((exps :accessor exps :initarg :exps)))
 
 (defclass library-import (scm-form)
   ((exps :accessor exps :initarg :exps)))
@@ -163,15 +172,7 @@
 
 (defclass Library-definition (scm-form)
   ((syms :accessor syms :initarg :syms)
-   (exps :accessor exps :initarg :exps)
-   (mod-ex :accessor mod-ex :initarg :mod-ex)))
-
-;   (mod-im :accessor mod-im :initarg :mod-im)
-;   (mod-ex :accessor mod-ex :initarg :mod-ex)
-;   (mod-inc :accessor mod-inc :initarg :mod-inc)
-;   (mod-inc-ci :accessor mod-inc-ci :initarg :mod-inc-ci)
-;   (mod-cond :accessor mod-cond :initarg :mod-cond)
-;   (mod-begin :accessor mod-begin :initarg :mod-begin)))
+   (exps :accessor exps :initarg :exps)))
 
 (defclass library (scm-object)
   ((syms :accessor syms :initarg :syms)

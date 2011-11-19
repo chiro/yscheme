@@ -22,7 +22,7 @@
 (setf *scm-features*
       '("r7rs" "exact-closed" "ratios"
         "full-unicode" "posix" "ubuntu" "x86-64" "ilp32"
-        "yscheme" "yscheme-0.0001"))
+        "yscheme" "yscheme-0.0.1"))
 
 (defun features-to-list (features)
   (apply #'scm-list
@@ -35,27 +35,35 @@
 (defun find-library (syms)
   (find (mapcar #'name syms)
         *scm-libraries*
-        :key (lambda (m) (mapcar #'name (syms m)))
-        :test (lambda (l1 l2) (every #'equal l1 l2))))
+        :key (lambda (lib)
+               (mapcar (lambda (elem)
+                         (typecase elem
+                           (scm-symbol (name elem))
+                           (scm-integer (val elem))))
+                       (syms lib)))
+        :test #'equal))
 
 
 (defmethod scm-eval ((libdef library-definition) env)
-  (with-slots (syms exps lib-ex) libdef
-    (let ((lib-env env))
-      (dolist (exp exps)
-        (scm-eval exp lib-env))
-      (push (list (scm-eval lib-ex lib-env)) (cdr (last env)))
-      (push (new 'library :syms syms :env lib-env) *scm-libraries*)
-      +undefined+)))
+  (let ((lib-env env) lib-exs)
+    (dolist (exp (exps libdef))
+      (typecase exp
+        (library-export (push exp lib-exs))
+        (t (scm-eval exp lib-env))))
+    (dolist (lib-ex lib-exs)
+      (push (list (scm-eval lib-ex lib-env)) (cdr (last env))))
+    (push (new 'library :syms (syms libdef) :env lib-env) *scm-libraries*)
+    +undefined+))
 
 (defmethod scm-eval ((lib-ex library-export) env)
-  (with-slots (syms renames) lib-ex
-    (let (new-frame)
-      (dolist (sym syms)
-        (push (cons (name sym) (cdr (assoc-env sym env))) new-frame))
-      (dolist (rename renames)
-        (with-slots (from to) rename
-          (push (cons (name to) (cdr (assoc-env from env))) new-frame)))
+  (let (new-frame)
+    (dolist (exp (exps lib-ex))
+      (typecase exp
+        (scm-symbol
+         (push (cons (name exp) (cdr (assoc-env exp env))) new-frame))
+        (rename-pair
+         (with-slots (from to) exp
+           (push (cons (name to) (cdr (assoc-env from env))) new-frame))))
       new-frame)))
 
 
@@ -126,7 +134,7 @@
   (if (scm-truep (scm-eval (req clause) env))
       (call-next-method)))
 
-(defmethod scm-clause-eval ((clause cond-expand-clause) env &key)
+(defmethod scm-clause-eval ((clause cond-expand-else-clause) env &key)
   (call-next-method))
 
 
@@ -137,3 +145,7 @@
 (defmethod scm-eval ((req required-library) env)
   (if (find-library (syms req))
       +true+ +false+))
+
+(defmethod scm-eval ((req required-not) env)
+  (if (scm-truep (scm-eval req))
+      +false+ +true+))

@@ -55,14 +55,9 @@
 ;  (:lambda (lst) (remove-if #'null lst))
 )
 
-(esrap::defrule operator
-    (esrap::and intertoken_space expression)
-  (:destructure (sp ex) ex)
-)
-(esrap::defrule operand
-    (esrap::and intertoken_space expression)
-  (:destructure (sp ex) ex)
-)
+(esrap::defrule operator expression)
+
+(esrap::defrule operand expression)
 
 (esrap::defrule lambda_expression
     (esrap::and intertoken_space
@@ -93,7 +88,7 @@
           ((= (length data) 2)
            (make-instance 'scm-parameters :rst (second data)))
           ((= (length data) 10)
-           (make-instance 'scm-parameters :syms (fourth data) :rst (seventh data))))))
+           (make-instance 'scm-parameters :syms (fourth data) :rst (eighth data))))))
 
 (esrap::defrule body
     (esrap::and (esrap::* syntax_definition) intertoken_space
@@ -110,11 +105,7 @@
     (esrap::and (esrap::* command) intertoken_space)
   (:destructure (clist sp) clist))
 
-
-(esrap::defrule command
-    (esrap::and intertoken_space
-                expression)
-  (:destructure (s1 exp) exp))
+(esrap::defrule command expression)
 
 (esrap::defrule conditional
     (esrap::and intertoken_space

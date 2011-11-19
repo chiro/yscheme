@@ -10,6 +10,10 @@
 (defmacro new (class &rest initargs)
   `(make-instance ,class ,@initargs))
 
+(defmacro while (expr &body body)
+  `(do () ((not ,expr))
+     ,@body))
+
 (defmacro define-predicate (name ((parm class)) otherwise &body body)
   (with-gensyms (obj)
     `(progn

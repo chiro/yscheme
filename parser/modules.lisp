@@ -2,67 +2,67 @@
 
 ;; TODO write action
 
-(esrap::defrule module
+(esrap::defrule library
     (esrap::and "(" intertoken_space
-                "module" intertoken_space
-                module_name intertoken_space
-                (esrap::* (esrap::and module_declaration intertoken_space))
+                "define-library" intertoken_space
+                library_name intertoken_space
+                (esrap::* (esrap::and library_declaration intertoken_space))
                 ")"))
 
-(esrap::defrule module_name
+(esrap::defrule library_name
     (esrap::and "(" intertoken_space
-                (esrap::+ (esrap::and module_name_part intertoken_space))
+                (esrap::+ (esrap::and library_name_part intertoken_space))
                 ")"))
 
-(esrap::defrule module_name_part
+(esrap::defrule library_name_part
     (esrap::or identifier
                uinteger10))
 
-(esrap::defrule module_declaration
-    (esrap::and m_export
-                m_import 
-                m_begin
-                m_include
-                m_include_ci
-                m_cond_expand))
+(esrap::defrule library_declaration
+    (esrap::and l_export
+                l_import
+                l_begin
+                l_include
+                l_include_ci
+                l_cond_expand))
 
-(esrap::defrule m_export
+(esrap::defrule l_export
     (esrap::and "(" intertoken_space
                 "export" intertoken_space
                 (esrap::* (esrap::and export_spec intertoken_space))
                 ")"))
 
-(esrap::defrule m_import
+(esrap::defrule l_import
     (esrap::and "(" intertoken_space
                 "import" intertoken_space
                 (esrap::* (esrap::and import_set intertoken_space))
                 ")"))
 
-(esrap::defrule m_begin
+(esrap::defrule l_begin
     (esrap::and "(" intertoken_space
                 "begin" intertoken_space
                 (esrap::* (esrap::and command_or_definition intertoken_space))
                 ")"))
 
-(esrap::defrule m_include
+(esrap::defrule l_include
     (esrap::and "(" intertoken_space
                 "include" intertoken_space
                 (esrap::+ (esrap::and scm_string intertoken_space))
                 ")"))
 
-(esrap::defrule m_include_ci
+(esrap::defrule l_include_ci
     (esrap::and "(" intertoken_space
                 "include-ci" intertoken_space
                 (esrap::+ (esrap::and scm_string intertoken_space))
                 ")"))
 
-(esrap::defrule m_cond_expand
+(esrap::defrule l_cond_expand
     (esrap::and "(" intertoken_space
                 "cond-expand" intertoken_space
                 (esrap::* (esrap::and cond_expand_clause intertoken_space))
                 (esrap::? (esrap::and "(" intertoken_space
                                       "else" intertoken_space
-                                      (esrap::* (esrap::and module_declaration intertoken_space))
+                                      (esrap::* (esrap::and library_declaration intertoken_space))
                                       ")" intertoken_space))
                 ")"))
 
@@ -77,7 +77,7 @@
                 ")"))
 
 (esrap::defrule import_set
-    (esrap::or module_name
+    (esrap::or library_name
                is_only
                is_except
                is_prefix
@@ -110,12 +110,12 @@
 (esrap::defrule cond_expand_clause
     (esrap::and "(" intertoken_space
                 feature_requirement intertoken_space
-                (esrap::* (esrap::and module_declaration intertoken_space))
+                (esrap::* (esrap::and library_declaration intertoken_space))
                 ")"))
 
 (esrap::defrule feature_requirement
     (esrap::or identifier
-               module_name
+               library_name
                fr_and
                fr_or
                fr_not))

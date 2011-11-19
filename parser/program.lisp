@@ -14,6 +14,7 @@
     (esrap::or command
                definition
                syntax_definition
+               library
                ;; (esrap::and intertoken_space
                ;;             "(" intertoken_space
                ;;             "import" intertoken_space
@@ -91,13 +92,13 @@
                            intertoken_space
                            "." intertoken_space
                            scm_variable)
-               (esrap::* (esrap::and scm_variable intertoken_space))
-               )
+               (esrap::* (esrap::and scm_variable intertoken_space)))
   (:lambda (data)
-    (if (and (= (length data) 5) (string= "." (caddr data)))
-        (remove-if #'null data)
-        (make-instance 'scm-parameters :syms (mapcar #'car data))))
-)
+    (if (and (stringp (third data)) (string= "." (third data)))
+        (make-instance 'scm-parameters
+                       :syms (mapcar #'car (remove-if #'null (car data)))
+                       :rst (fifth data))
+        (make-instance 'scm-parameters :syms (mapcar #'car data)))))
 
 (esrap::defrule constructor
     (esrap::and intertoken_space

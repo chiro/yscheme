@@ -14,15 +14,23 @@
 
 (defmethod scm-apply ((proc compound-procedure) &rest args)
   (with-slots (parms body env) proc
-    (let* ((args (append (butlast args) (last1 args)))
-           (new-frame (mapcar (lambda (p v) (cons (name p) v))
-                              (syms parms) args)))
-      (awhen (rst parms)
-        (push (cons it (scm-general-list
-                        (new 'scm-nil)
-                        (nthcdr (- (length args) (length (syms parms))) args)))
-              new-frame))
-      (scm-eval body (append1 env new-frame)))))
+    (with-slots (syms rst) parms
+      (let ((args (append (butlast args) (last1 args))))
+        (let* ((syms-len  (length syms))
+               (rst-len   (if rst 1 0))
+               (parms-len (+ syms-len rst-len))
+               (args-len  (length args)))
+          (if (or (and (null rst) (/= parms-len args-len))
+                  (> parms-len args-len))
+              (error "Illegal function call (required ~A, but ~A)"
+                     parms-len args-len)
+              (let* ((new-frame (mapcar (lambda (p v) (cons (name p) v))
+                                        syms args)))
+                (awhen rst
+                  (push (cons (name it)
+                              (scm-general-list (new 'scm-nil) (nthcdr syms-len args)))
+                        new-frame))
+                (scm-eval body (append1 env new-frame)))))))))
 
 
 (defgeneric scm-map (obj1 &rest objs))
