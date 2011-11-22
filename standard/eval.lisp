@@ -10,8 +10,10 @@
 (defmethod scm-eval ((exp self-evaluating) env)
   exp)
 
-(defmethod scm-eval ((obj list) env) ; multiple-values ???
-  (scm-eval (car obj) env))
+(defmethod scm-eval ((obj list) env)
+  (if obj
+      (scm-eval (car obj) env)
+      nil))
 
 (defmethod scm-eval :around (obj env)
   (declare (ignorable obj env))
@@ -224,7 +226,7 @@
               (append new-frame
                       (mapcar (lambda (sym val) (cons (name sym) val))
                               (syms mvbind)
-                              (scm-eval (init mvbind) (cons new-frame env))))))
+                              (scm-eval (init mvbind) (append1 env new-frame))))))
       (scm-eval body (append1 env new-frame)))))
 
 
@@ -267,7 +269,6 @@
                       :body body
                       :env env))
            (new-frame (list (cons (name sym) proc))))
-      (push (mapcar #'sym binds) *a)
       (setf (env proc) (append1 env new-frame))
       (scm-apply proc
                  (mapcar (lambda (b) (scm-eval (init b) env))

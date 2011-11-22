@@ -1,34 +1,48 @@
 (in-package :yscheme)
 
+(defparameter *current-version* '(0 0 0 1))
 
-(defvar *previous-interaction-environment* nil)
 
-(defun %read-eval-print-loop ()
-  (labels ((rec ()
-             (setf *previous-interaction-environment*
-                   (copy-tree *interaction-environment*))
-             (princ "> ")
-             (setf *eval-count* 0)
-             (let ((input (scm-read)))
-               (multiple-value-bind (value envp)
-                   (scm-eval input *interaction-environment*)
-                 (cond (envp (format t "#<environment>"))
-                       ((listp value)
-                        (dolist (v value) (scm-display v) (princ #\Newline)))
-                       (t (scm-write value) (princ #\Newline)))
-                 (rec)))))
-    (if (scm-truep (catch 'exit (rec)))
-        (sb-ext:quit)
-        (sb-ext:quit :unix-status 1))))
+(defun %read-print-eval-loop ()
+  (print-prompt)
+  (do ((toplevel-counter 0 (1+ toplevel-counter))
+       (input-data (scm-read) (scm-read)))
+      ((repl-end-p input-data))
+    (multiple-value-bind (value envp) (scm-eval input-data) ;; mbr
+      (setf *previous-interaction-environment*
+            (copy-tree *interaction-environment))
+      (print-value value envp)
+      (print-prompt))))
 
 (defun repl ()
-  (format t "YSCHEME(PROTOTYPE) 0.0.1~%~%")
-  (while t
-    (handler-case (%read-eval-print-loop)
-      (error ()
-        (format t "ERROR: invalid input~%")
-        (setf *interaction-environment*
-              (copy-tree *previous-interaction-environment*))))))
+  (print-title)
+  (loop
+     (handler-case (%read-eval-print-loop)
+       (error ()
+         (format t "ERROR: invalid input~%")
+         (setf *interaction-environment*
+               (copy-tree *previous-interaction-environment*))))))
+
+(defun print-prompt ()
+  (format t "~%> "))
+
+(defun print-title ()
+  (apply #'format t
+         "YSCHEME(PROTOTYPE) ~D.~D.~D.D~%~%"
+         *current-version*))
+
+(defun repl-end-p (data)
+  (and (eql (class-name (class-of data)) 'quotation)
+       (scm-truep (scm-symbol? (qexp data)))
+       (eql "bye" (name data))))
+
+(defun print-value (value envp)
+  (cond (envp
+        ((listp value)
+         (dolist (v value)
+           (scm-write value *standard-outpu*)
+           (princ #\Newline)))
+        (t (scm-write value *standard-outpu*)))))
 
 
 (defmacro flags-acond (&rest clauses)
