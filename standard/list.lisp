@@ -14,7 +14,7 @@
 (defmethod scm-car ((obj scm-pair)) (val-car obj))
 
 (defgeneric scm-cdr (obj))
-(defmethod scm-car ((obj scm-pair)) (val-cdr obj))
+(defmethod scm-cdr ((obj scm-pair)) (val-cdr obj))
 
 (defgeneric scm-set-car! (obj1 obj2))
 (defmethod scm-set-car! ((pair scm-pair) (obj scm-object))
