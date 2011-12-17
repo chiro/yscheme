@@ -1,0 +1,19 @@
+名前       : yscheme(仮)
+何であるか : scheme(r7rs)処理系
+状態       : 現在作っています。
+ソース     : https://github/yukiahru/yscheme
+
+実行方法(sbclの場合) :
+~/.sbcl/systems/yscheme.asd から yschemey/scheme.asd へシンボリックリンクを貼って、
+端末上で、
+$ sbcl
+* (require 'yscheme)
+* (in-package :yscheme)
+* (repl)
+とするとREPLが起動します。
+
+バイナリは
+* (sb-ext:save-lisp-and-die "yscheme.out" :top-level 'yscheme:repl :executable t)
+によって生成することができると思います。
+
+TODO : call/cc, define-syntax など。
